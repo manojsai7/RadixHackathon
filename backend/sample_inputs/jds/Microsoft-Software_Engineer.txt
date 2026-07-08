@@ -1,0 +1,17 @@
+Microsoft - Software Engineer
+Location: Redmond, WA
+
+Overview:
+We are seeking a Software Engineer to work on Azure Cloud and developer tools. This role involves building highly scalable SaaS microservices and cloud infrastructures.
+
+Key Qualifications:
+- Proficiency in C#, Java, or C++ with a strong focus on Object-Oriented Design (OOD) and design patterns.
+- Strong software engineering (SWE) foundation: Git, CI/CD pipelines, unit testing, and agile practices.
+- Cloud experience on Microsoft Azure, AWS, or Google Cloud.
+- In-depth understanding of System Design (SYSD), microservices architecture, and load balancing.
+- Familiarity with operating systems (OS) concepts (Windows, Linux) and network protocols (TCP/IP, HTTP).
+
+Responsibilities:
+- Design, implement, and test core service capabilities for global deployments.
+- Write secure, performant code, utilizing clean coding practices.
+- Foster teamwork and collaboration with active verbal and written communication.

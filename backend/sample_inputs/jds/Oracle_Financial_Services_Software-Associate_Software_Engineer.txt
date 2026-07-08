@@ -1,0 +1,11 @@
+Oracle Financial Services Software - Associate Software Engineer
+Location: Mumbai, India
+
+Requirements:
+- Bachelor's degree in Engineering (CS, IT, Electronics) or MCA.
+- Sound knowledge of programming in Java, C++, or Python.
+- Good understanding of Data Structures and Algorithms (DSA).
+- Excellent relational database concepts, SQL queries, and database views.
+- Familiarity with Object-Oriented Programming (OOP) design.
+- Good communication and collaboration skills.
+- Understanding of software engineering lifecycle (testing, git).

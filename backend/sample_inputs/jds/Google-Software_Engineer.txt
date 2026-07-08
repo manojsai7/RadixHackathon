@@ -1,0 +1,18 @@
+Google - Software Engineer
+Location: Mountain View, CA (Hybrid)
+
+Minimum Qualifications:
+- Bachelor's degree in Computer Science, a related technical field, or equivalent practical experience.
+- 2 years of experience with software development in one or more programming languages (e.g., Python, C++, Java, or Go).
+- Strong foundations in Data Structures and Algorithms (DSA).
+
+Preferred Qualifications:
+- Experience in Object-Oriented Design (OOD) and system design of large-scale distributed systems.
+- Experience with Cloud technologies (AWS, GCP, Azure) and database systems (SQL / NoSQL).
+- Solid software engineering practices (SWE) including unit testing, git, and agile workflows.
+- Ability to debug low-level operating system (OS) issues or work with networking protocols (TCP/IP).
+
+Responsibilities:
+- Write clean, maintainable code for core infrastructure services.
+- Analyze algorithms to improve performance and throughput.
+- Collaborate with product managers and other engineers via clear written and verbal communication.

@@ -1,0 +1,14 @@
+Google - Data Scientist
+Location: New York, NY
+
+Responsibilities:
+- Build machine learning (ML) models and deep learning solutions to optimize search and recommendation algorithms.
+- Apply statistical analysis and aptitude for numerical reasoning (APTI) to large datasets.
+- Query databases using SQL and build pipelines to handle high volume user data.
+- Develop data processing scripts in Python, R, or Scala.
+- Coordinate with product teams, delivering presentations and reports with high-quality communication.
+
+Minimum Qualifications:
+- Master's degree in Statistics, Mathematics, Computer Science, or equivalent analytical field.
+- Experience with AI frameworks such as PyTorch or TensorFlow.
+- Experience with SQL databases (MySQL, PostgreSQL) and data visualization tools.

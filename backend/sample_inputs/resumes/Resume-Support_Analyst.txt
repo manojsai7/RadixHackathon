@@ -1,0 +1,13 @@
+Jordan Smith
+Email: jordan.smith@supportpro.net
+Education: Associate Degree in Information Technology, Seattle Central College
+
+Summary:
+Entry-level Support Analyst skilled in diagnosing software configuration errors, monitoring database logs, and helping customers resolve tech issues.
+
+Skills and Experience:
+- Communication: Excellent client interaction and verbal communication. Wrote detailed help center articles and support tickets.
+- Databases: Basic SQL skills to query databases and verify user data records.
+- Operating Systems (OS): Comfortable troubleshooting Windows and Linux OS errors and reading log files.
+- Networking: Understands basic TCP/IP setup, DNS resolution, and router configs.
+- Aptitude: Strong logical troubleshooting skills to isolate client-side vs server-side issues.

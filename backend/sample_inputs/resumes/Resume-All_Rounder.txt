@@ -1,0 +1,17 @@
+Morgan Vance
+Email: morgan.vance@devstar.com
+Education: B.S. in Computer Science, Georgia Tech
+
+Summary:
+Versatile Full Stack Software Engineer with deep experience across algorithms, system architecture, database systems, and modern cloud deployment frameworks.
+
+Skills and Experience:
+- Coding: Proficient in Python, Java, TypeScript, and JavaScript. Built React web applications.
+- DSA: Excellent understanding of algorithms, dynamic programming, sorting, and graph trees.
+- Object-Oriented Design (OOD): Used Java to build applications following strict SOLID principles and design patterns.
+- Cloud: Experienced with AWS services (EC2, S3, RDS), Docker containers, and Kubernetes deployments.
+- SQL & Databases: Designed PostgreSQL databases and optimized index configurations.
+- Software Engineering (SWE): Active git contributor, implemented CI/CD pipelines, and practiced unit testing.
+- AI & ML: Built a neural network text classifier using PyTorch and training data.
+- System Design (SYSD): Designed scalable backend APIs utilizing microservices and redis caching.
+- Communication (COMM): High verbal and written collaboration skills, participating in Agile sprints.

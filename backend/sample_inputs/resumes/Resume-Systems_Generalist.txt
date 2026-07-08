@@ -1,0 +1,15 @@
+Alex Rivera
+Email: alex.rivera@systemsgeek.com
+Education: B.S. in Computer Engineering, University of Washington
+
+Summary:
+Low-level Software Engineer with deep interest in OS kernels, networking protocols, and systems programming in C++ and Rust.
+
+Skills and Experience:
+- Coding: Expert in C++, Rust, and assembly. Built custom scheduler for a microkernel OS.
+- Operating Systems (OS): Experienced with Linux kernel modules, memory management, and process synchronization.
+- Networking: Strong experience with TCP/IP protocols, sockets programming, routing tables, and DNS systems.
+- DSA: Practical application of algorithms and data structures (graph search, lock-free queues, hash tables).
+- System Design: Implemented a distributed caching layer and worked with load balancing configurations.
+- Software Engineering (SWE): Used Git for version control, wrote comprehensive unit testing, and worked in Agile teams.
+- Communication: Collaborated with cross-functional teams to resolve low-level device driver bugs.

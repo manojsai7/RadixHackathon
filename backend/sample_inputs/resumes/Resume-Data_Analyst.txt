@@ -1,0 +1,14 @@
+Taylor Chen
+Email: taylor.chen@datalover.io
+Education: Master of Science in Business Analytics, NYU
+
+Summary:
+Data Analyst with 3 years of experience generating data-driven business insights, querying large relational databases, and building predictive analytics models.
+
+Skills and Experience:
+- SQL & Databases: Writing complex SQL queries, views, subqueries, and table joins. Experienced with PostgreSQL and MySQL.
+- Python: Wrote Python scripts for data cleaning, ETL, and automated reporting.
+- Aptitude (APTI): Strong analytical skills, statistical modeling, hypothesis testing, and problem solving.
+- AI & ML: Basic knowledge of Machine Learning using scikit-learn.
+- Communication (COMM): Presented weekly findings to executive teams and created clear business slide decks.
+- Software Engineering: Solid Git practices and automated testing of data quality pipelines.

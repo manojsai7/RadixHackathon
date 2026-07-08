@@ -1,0 +1,12 @@
+Microsoft - Data Analyst
+Location: Redmond, WA
+
+Role Overview:
+We are looking for a Data Analyst to translate complex data into actionable insights for the Azure product division. You will build dashboards, analyze user behavior, and help shape product strategy.
+
+Requirements:
+- Advanced SQL skills: writing complex queries, window functions, and database design.
+- Practical experience with data analysis and programming languages, specifically Python or R.
+- High aptitude (APTI) for problem solving, statistical reasoning, and data storytelling.
+- Excellent communication (COMM) skills to convey insights to both technical and business audiences.
+- Experience with cloud-based data warehouses like Snowflake, Azure Synapse, or BigQuery.

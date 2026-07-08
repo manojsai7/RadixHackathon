@@ -1,0 +1,92 @@
+{
+  "Google": {
+    "Software Engineer": {
+      "COD": 9,
+      "DSA": 9,
+      "OOD": 8,
+      "APTI": 8,
+      "COMM": 8,
+      "AI": 5,
+      "CLOUD": 6,
+      "SQL": 6,
+      "SWE": 8,
+      "SYSD": 8,
+      "NETW": 6,
+      "OS": 7
+    },
+    "Data Scientist": {
+      "COD": 8,
+      "DSA": 7,
+      "OOD": 6,
+      "APTI": 9,
+      "COMM": 8,
+      "AI": 9,
+      "CLOUD": 7,
+      "SQL": 8,
+      "SWE": 7,
+      "SYSD": 6,
+      "NETW": 4,
+      "OS": 5
+    }
+  },
+  "Microsoft": {
+    "Software Engineer": {
+      "COD": 8,
+      "DSA": 8,
+      "OOD": 9,
+      "APTI": 8,
+      "COMM": 8,
+      "AI": 7,
+      "CLOUD": 8,
+      "SQL": 7,
+      "SWE": 9,
+      "SYSD": 8,
+      "NETW": 6,
+      "OS": 6
+    },
+    "Data Analyst": {
+      "COD": 6,
+      "DSA": 5,
+      "OOD": 5,
+      "APTI": 8,
+      "COMM": 9,
+      "AI": 6,
+      "CLOUD": 7,
+      "SQL": 9,
+      "SWE": 7,
+      "SYSD": 5,
+      "NETW": 3,
+      "OS": 4
+    }
+  },
+  "Oracle Financial Services Software": {
+    "Associate Software Engineer": {
+      "COD": 7,
+      "DSA": 7,
+      "OOD": 7,
+      "APTI": 8,
+      "COMM": 7,
+      "AI": 4,
+      "CLOUD": 5,
+      "SQL": 8,
+      "SWE": 7,
+      "SYSD": 5,
+      "NETW": 5,
+      "OS": 5
+    },
+    "Application Support Analyst": {
+      "COD": 5,
+      "DSA": 4,
+      "OOD": 5,
+      "APTI": 7,
+      "COMM": 8,
+      "AI": 3,
+      "CLOUD": 6,
+      "SQL": 8,
+      "SWE": 6,
+      "SYSD": 5,
+      "NETW": 7,
+      "OS": 6
+    }
+  }
+}

@@ -1,0 +1,15 @@
+Oracle Financial Services Software - Application Support Analyst
+Location: Bangalore, India
+
+Role Responsibilities:
+- Troubleshoot, debug, and resolve production application support issues.
+- Monitor cloud hosting environments and ensure database health using SQL queries.
+- Communicate status updates to clients and internal engineering teams clearly (COMM).
+- Analyze Linux/Windows system logs and manage OS settings to optimize runtime.
+- Verify software patches in testing environments before deployment.
+
+Preferred Qualifications:
+- Degree in Computer Science or IT.
+- Knowledge of relational databases, SQL queries, and indexing.
+- Basic networking concepts: TCP/IP, HTTP, routing, and firewalls.
+- Strong analytical aptitude and troubleshooting mindset (APTI).

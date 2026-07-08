@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
 import { 
   Briefcase, 
@@ -17,6 +17,8 @@ import {
   Zap,
   Mail
 } from 'lucide-react';
+import { gsap } from 'gsap';
+import { useGSAP } from '@gsap/react';
 
 const API_BASE = 'http://localhost:5000/api';
 
@@ -62,6 +64,7 @@ interface SkillMatchResult {
 }
 
 function App() {
+  const mainRef = useRef<HTMLDivElement>(null);
   // Lists
   const [sampleJds, setSampleJds] = useState<string[]>([]);
   const [sampleResumes, setSampleResumes] = useState<string[]>([]);
@@ -131,6 +134,110 @@ function App() {
     fetchSamples();
     fetchProfile();
   }, []);
+
+  // 1. Entrance staggered animation for glass panels on load
+  useGSAP(() => {
+    gsap.from(".glass-panel", {
+      opacity: 0,
+      y: 40,
+      duration: 0.8,
+      stagger: 0.12,
+      ease: "power2.out"
+    });
+  }, { scope: mainRef });
+
+  // 2. Animate Talent Check bars & scores on updates
+  useGSAP(() => {
+    if (talentResult) {
+      // Reset width first to trigger fresh animations on update
+      gsap.set(".level-indicator-fill-cand", { width: "0%" });
+      gsap.set(".level-indicator-fill-req", { width: "0%" });
+
+      // Animate candidate levels
+      gsap.to(".level-indicator-fill-cand", {
+        width: (_, target) => target.getAttribute('data-width') + "%",
+        duration: 1.2,
+        ease: "power3.out",
+        stagger: 0.03
+      });
+
+      // Animate required baselines
+      gsap.to(".level-indicator-fill-req", {
+        width: (_, target) => target.getAttribute('data-width') + "%",
+        duration: 0.9,
+        ease: "power3.out",
+        stagger: 0.02
+      });
+
+      // Count up score numbers
+      const scoreValueEl = document.querySelector(".talent-score-value");
+      if (scoreValueEl) {
+        const valObj = { val: 0 };
+        gsap.to(valObj, {
+          val: talentResult.readiness_score,
+          duration: 1.4,
+          snap: { val: 1 },
+          ease: "power2.out",
+          onUpdate: () => {
+            scoreValueEl.textContent = valObj.val + "%";
+          }
+        });
+      }
+    }
+  }, [talentResult]);
+
+  // 3. Animate Skill Match progress ring, stagger chips & count up score
+  useGSAP(() => {
+    if (matchResult) {
+      // Circular Match Ring Draw
+      const ring = document.querySelector(".value-ring") as SVGPathElement | null;
+      if (ring) {
+        const circumference = parseFloat(ring.getAttribute("data-circumference") || "0");
+        const targetOffset = parseFloat(ring.getAttribute("data-offset") || "0");
+        
+        // Reset to full dashoffset (0% filled)
+        gsap.set(ring, { strokeDashoffset: circumference });
+        
+        gsap.to(ring, {
+          strokeDashoffset: targetOffset,
+          duration: 1.6,
+          ease: "power3.out"
+        });
+      }
+
+      // Match Score Counter
+      const matchScoreEl = document.querySelector(".match-score-number");
+      if (matchScoreEl) {
+        const matchObj = { val: 0 };
+        gsap.to(matchObj, {
+          val: matchResult.match_score,
+          duration: 1.6,
+          snap: { val: 1 },
+          ease: "power2.out",
+          onUpdate: () => {
+            matchScoreEl.textContent = matchObj.val + "%";
+          }
+        });
+      }
+
+      // Matched and Missing Chips stagger slide-in
+      gsap.from(".chip-matched", {
+        opacity: 0,
+        x: -15,
+        duration: 0.5,
+        stagger: 0.03,
+        ease: "power1.out"
+      });
+
+      gsap.from(".chip-missing", {
+        opacity: 0,
+        x: 15,
+        duration: 0.5,
+        stagger: 0.03,
+        ease: "power1.out"
+      });
+    }
+  }, [matchResult]);
 
   // Fetch lists of samples
   const fetchSamples = async () => {
@@ -383,11 +490,14 @@ function App() {
             cy={size / 2} 
             r={radius} 
             strokeDasharray={circumference}
-            strokeDashoffset={offset}
+            strokeDashoffset={circumference}
+            data-offset={offset}
+            data-circumference={circumference}
+            style={{ stroke: 'var(--primary)' }}
           />
         </svg>
         <div className="value-text">
-          <span className="value-number">{score}%</span>
+          <span className="value-number match-score-number">0%</span>
           <span className="value-label">Match</span>
         </div>
       </div>
@@ -395,7 +505,7 @@ function App() {
   };
 
   return (
-    <div className="app-container">
+    <div className="app-container" ref={mainRef}>
       {/* HEADER */}
       <header className="header">
         <div className="logo-section">
@@ -940,7 +1050,7 @@ function App() {
               onClick={handleTalentCheck} 
               disabled={talentLoading}
               className="btn btn-primary"
-              style={{ background: 'linear-gradient(135deg, #a78bfa, #8b5cf6)' }}
+              style={{ background: 'linear-gradient(135deg, var(--primary), var(--secondary))' }}
             >
               {talentLoading ? <RefreshCw size={14} className="animate-spin" /> : <Play size={14} />} Analyze Readiness Bar
             </button>
@@ -953,7 +1063,7 @@ function App() {
                     <p style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>{talentResult.role}</p>
                   </div>
                   <div className="talent-score-badge">
-                    {talentResult.readiness_score}% Fit
+                    <span className="talent-score-value">0%</span> Fit
                   </div>
                 </div>
                 
@@ -979,11 +1089,13 @@ function App() {
                       <div className="level-indicator-bar">
                         <div 
                           className="level-indicator-fill-cand" 
-                          style={{ width: `${item.candidate_level * 10}%`, background: item.gap ? 'var(--danger)' : 'var(--success)' }} 
+                          data-width={item.candidate_level * 10}
+                          style={{ width: '0%', background: item.gap ? 'var(--danger)' : 'var(--success)' }} 
                         />
                         <div 
                           className="level-indicator-fill-req" 
-                          style={{ width: `${item.required_level * 10}%` }} 
+                          data-width={item.required_level * 10}
+                          style={{ width: '0%' }} 
                         />
                       </div>
                     </div>
@@ -1009,7 +1121,7 @@ function App() {
               onClick={handleSkillMatch} 
               disabled={matchLoading}
               className="btn btn-primary"
-              style={{ background: 'linear-gradient(135deg, #f59e0b, #d97706)' }}
+              style={{ background: 'linear-gradient(135deg, var(--accent), var(--secondary))' }}
             >
               {matchLoading ? <RefreshCw size={14} className="animate-spin" /> : <Play size={14} />} Run Skill Match Check
             </button>

@@ -1,14 +1,27 @@
 {
-  "cleanUrls": true,
-  "framework": "vite",
+  "services": {
+    "frontend": {
+      "root": "frontend",
+      "framework": "vite"
+    },
+    "backend": {
+      "root": "backend"
+    }
+  },
   "rewrites": [
     {
-      "source": "/api/(.*)",
-      "destination": "http://localhost:5000/api/$1"
+      "source": "/api(/.*)?",
+      "destination": {
+        "type": "service",
+        "service": "backend"
+      }
     },
     {
       "source": "/(.*)",
-      "destination": "/index.html"
+      "destination": {
+        "type": "service",
+        "service": "frontend"
+      }
     }
   ]
 }

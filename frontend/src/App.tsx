@@ -118,8 +118,10 @@ function App() {
   // Notifications
   const [alertMsg, setAlertMsg] = useState<{ text: string; type: 'info' | 'success' | 'error' | null }>({ text: '', type: null });
 
-  // Step Navigation
+  // Step Navigation & Chart Interactive States
   const [step, setStep] = useState(1);
+  const [talentFilter, setTalentFilter] = useState<'all' | 'ready' | 'gap'>('all');
+  const [hoveredMatchSegment, setHoveredMatchSegment] = useState<'all' | 'matched' | 'missing'>('all');
   const contentRef = useRef<HTMLDivElement>(null);
 
   // Company - Role Mapping for dropdowns
@@ -512,6 +514,127 @@ function App() {
       </div>
     );
   };
+
+  // Render SVG Talent Doughnut Chart
+  const renderTalentDonut = (result: TalentCheckResult) => {
+    const total = result.skillset_gap.length;
+    const gaps = result.skillset_gap.filter(item => item.gap).length;
+    const ready = total - gaps;
+    
+    // Circle parameters (Radius 36, Circumference 226.195)
+    const radius = 36;
+    const circ = 2 * Math.PI * radius;
+    
+    const readyStrokeOffset = circ - (ready / total) * circ;
+    const gapStrokeOffset = circ - (gaps / total) * circ;
+    
+    return (
+      <div className="talent-donut-chart-container" style={{ 
+        display: 'flex', 
+        flexDirection: 'column', 
+        alignItems: 'center', 
+        gap: '1rem', 
+        padding: '1.25rem', 
+        background: 'rgba(255,255,255,0.01)', 
+        borderRadius: '12px', 
+        border: '1px solid rgba(255,255,255,0.03)', 
+        marginBottom: '1.5rem' 
+      }}>
+        <h4 style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--text-secondary)' }}>Skill Categories Distribution</h4>
+        
+        <div style={{ position: 'relative', width: '120px', height: '120px' }}>
+          <svg width="120" height="120" viewBox="0 0 120 120" style={{ transform: 'rotate(-90deg)' }}>
+            {/* Background ring */}
+            <circle cx="60" cy="60" r={radius} fill="transparent" stroke="rgba(255,255,255,0.02)" strokeWidth="8" />
+            
+            {/* Ready segment */}
+            <circle 
+              cx="60" 
+              cy="60" 
+              r={radius} 
+              fill="transparent" 
+              stroke="var(--primary)" 
+              strokeWidth="8" 
+              strokeDasharray={circ} 
+              strokeDashoffset={readyStrokeOffset} 
+              strokeLinecap="round"
+              style={{ transition: 'stroke-dashoffset 0.8s ease' }}
+            />
+            
+            {/* Gaps segment */}
+            <circle 
+              cx="60" 
+              cy="60" 
+              r={radius} 
+              fill="transparent" 
+              stroke="var(--secondary)" 
+              strokeWidth="8" 
+              strokeDasharray={circ} 
+              strokeDashoffset={gapStrokeOffset} 
+              strokeLinecap="round"
+              style={{ 
+                transition: 'stroke-dashoffset 0.8s ease',
+                transform: `rotate(${(ready / total) * 360}deg)`,
+                transformOrigin: '60px 60px'
+              }}
+            />
+          </svg>
+          <div style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+            <span style={{ fontSize: '1.25rem', fontWeight: 'bold', color: 'white', fontFamily: 'Outfit' }}>{ready}/{total}</span>
+            <span style={{ fontSize: '0.65rem', color: 'var(--text-muted)' }}>Ready</span>
+          </div>
+        </div>
+        
+        {/* Legends & Filter Pills */}
+        <div style={{ display: 'flex', gap: '0.5rem', width: '100%', justifyContent: 'center' }}>
+          <button 
+            onClick={() => setTalentFilter('all')} 
+            className={`btn btn-secondary ${talentFilter === 'all' ? 'active' : ''}`}
+            style={{ 
+              padding: '0.35rem 0.65rem', 
+              fontSize: '0.75rem', 
+              borderRadius: '20px', 
+              background: talentFilter === 'all' ? 'rgba(224, 169, 109, 0.1)' : 'transparent',
+              borderColor: talentFilter === 'all' ? 'var(--primary)' : 'rgba(255,255,255,0.05)'
+            }}
+          >
+            All ({total})
+          </button>
+          
+          <button 
+            onClick={() => setTalentFilter('ready')} 
+            className={`btn btn-secondary ${talentFilter === 'ready' ? 'active' : ''}`}
+            style={{ 
+              padding: '0.35rem 0.65rem', 
+              fontSize: '0.75rem', 
+              borderRadius: '20px', 
+              color: 'var(--primary)',
+              background: talentFilter === 'ready' ? 'rgba(224, 169, 109, 0.1)' : 'transparent',
+              borderColor: talentFilter === 'ready' ? 'var(--primary)' : 'rgba(255,255,255,0.05)'
+            }}
+          >
+            Ready ({ready})
+          </button>
+          
+          <button 
+            onClick={() => setTalentFilter('gap')} 
+            className={`btn btn-secondary ${talentFilter === 'gap' ? 'active' : ''}`}
+            style={{ 
+              padding: '0.35rem 0.65rem', 
+              fontSize: '0.75rem', 
+              borderRadius: '20px', 
+              color: 'var(--secondary)',
+              background: talentFilter === 'gap' ? 'rgba(185, 116, 85, 0.1)' : 'transparent',
+              borderColor: talentFilter === 'gap' ? 'var(--secondary)' : 'rgba(255,255,255,0.05)'
+            }}
+          >
+            Gaps ({gaps})
+          </button>
+        </div>
+      </div>
+    );
+  };
+
 
   return (
     <div className="app-layout" ref={mainRef}>
@@ -1038,9 +1161,18 @@ function App() {
                         </div>
                       </div>
 
+                      {/* Interactive Doughnut Summary Chart */}
+                      {renderTalentDonut(talentResult)}
+
                       {/* 12 Skillset Gap Grid */}
                       <div className="gap-analyzer-list" style={{ maxHeight: '420px', overflowY: 'auto' }}>
-                        {talentResult.skillset_gap.map((item, i) => (
+                        {talentResult.skillset_gap
+                          .filter(item => {
+                            if (talentFilter === 'ready') return !item.gap;
+                            if (talentFilter === 'gap') return item.gap;
+                            return true;
+                          })
+                          .map((item, i) => (
                           <div key={i} className="gap-item" style={{ background: 'rgba(255, 255, 255, 0.01)', border: '1px solid rgba(255, 255, 255, 0.03)', padding: '0.75rem', borderRadius: '8px', marginBottom: '0.65rem' }}>
                             <div className="gap-item-title">
                               <span className={`badge badge-${item.category_code}`}>{item.category_code}</span>
@@ -1131,7 +1263,19 @@ function App() {
                         </div>
                       </div>
                       
-                      <div style={{ marginTop: '1.5rem' }}>
+                      <div 
+                        onMouseEnter={() => setHoveredMatchSegment('matched')}
+                        onMouseLeave={() => setHoveredMatchSegment('all')}
+                        style={{ 
+                          marginTop: '1.5rem', 
+                          opacity: hoveredMatchSegment === 'missing' ? 0.35 : 1, 
+                          transition: 'all 0.3s ease', 
+                          cursor: 'pointer', 
+                          padding: '0.5rem', 
+                          borderRadius: '8px', 
+                          background: hoveredMatchSegment === 'matched' ? 'rgba(255,255,255,0.01)' : 'transparent' 
+                        }}
+                      >
                         <h4 style={{ fontSize: '0.85rem', color: 'white', marginBottom: '0.5rem', fontWeight: 600 }}>Matched Skills ({matchResult.matched_skills.length})</h4>
                         <div className="skill-chips-list">
                           {matchResult.matched_skills.map((skill, i) => (
@@ -1141,7 +1285,19 @@ function App() {
                         </div>
                       </div>
 
-                      <div style={{ marginTop: '1.25rem' }}>
+                      <div 
+                        onMouseEnter={() => setHoveredMatchSegment('missing')}
+                        onMouseLeave={() => setHoveredMatchSegment('all')}
+                        style={{ 
+                          marginTop: '1.25rem', 
+                          opacity: hoveredMatchSegment === 'matched' ? 0.35 : 1, 
+                          transition: 'all 0.3s ease', 
+                          cursor: 'pointer', 
+                          padding: '0.5rem', 
+                          borderRadius: '8px', 
+                          background: hoveredMatchSegment === 'missing' ? 'rgba(255,255,255,0.01)' : 'transparent' 
+                        }}
+                      >
                         <h4 style={{ fontSize: '0.85rem', color: 'white', marginBottom: '0.5rem', fontWeight: 600 }}>Missing / Gaps ({matchResult.missing_skills.length})</h4>
                         <div className="skill-chips-list">
                           {matchResult.missing_skills.map((skill, i) => (

@@ -21,7 +21,9 @@ import {
   Database,
   Sliders,
   CheckCircle2,
-  XCircle
+  XCircle,
+  Sun,
+  Moon
 } from 'lucide-react';
 import { gsap } from 'gsap';
 import { useGSAP } from '@gsap/react';
@@ -83,6 +85,9 @@ interface ApiLog {
 function App() {
   const mainRef = useRef<HTMLDivElement>(null);
   const contentRef = useRef<HTMLDivElement>(null);
+
+  // Theme control: false = Light Theme (default), true = Dark Theme (Obsidian & Gold)
+  const [darkMode, setDarkMode] = useState(false);
 
   // Navigation state (1-5 representing the 5 roles)
   const [step, setStep] = useState(1);
@@ -640,7 +645,7 @@ function App() {
     window.print();
   };
 
-  // Render SVG Completeness Ring (Step 3)
+  // Render SVG Completeness Ring (Step 3) - Dynamically binds to theme-primary
   const renderCompletenessRing = (score: number) => {
     const size = 90;
     const strokeWidth = 5;
@@ -651,13 +656,13 @@ function App() {
     return (
       <div style={{ position: 'relative', width: size, height: size }}>
         <svg width={size} height={size}>
-          <circle cx={size / 2} cy={size / 2} r={radius} fill="transparent" stroke="rgba(255,255,255,0.03)" strokeWidth={strokeWidth} />
+          <circle cx={size / 2} cy={size / 2} r={radius} fill="transparent" stroke="rgba(0,0,0,0.03)" strokeWidth={strokeWidth} />
           <circle 
             cx={size / 2} 
             cy={size / 2} 
             r={radius} 
             fill="transparent" 
-            stroke="var(--gold)" 
+            stroke="var(--primary)" 
             strokeWidth={strokeWidth} 
             strokeDasharray={circumference}
             strokeDashoffset={offset}
@@ -666,14 +671,14 @@ function App() {
           />
         </svg>
         <div style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
-          <span style={{ fontSize: '1.1rem', fontWeight: 'bold', color: 'var(--gold)', fontFamily: 'Outfit' }}>{score}%</span>
+          <span style={{ fontSize: '1.1rem', fontWeight: 'bold', color: 'var(--primary)', fontFamily: 'Outfit' }}>{score}%</span>
           <span style={{ fontSize: '0.5rem', color: 'var(--text-secondary)', textTransform: 'uppercase' }}>Complete</span>
         </div>
       </div>
     );
   };
 
-  // Render SVG Skill Match Ring (Step 5)
+  // Render SVG Skill Match Ring (Step 5) - Dynamically binds to theme-primary
   const renderSkillMatchRing = (score: number) => {
     const size = 110;
     const strokeWidth = 8;
@@ -684,14 +689,14 @@ function App() {
     return (
       <div style={{ position: 'relative', width: size, height: size }}>
         <svg width={size} height={size}>
-          <circle cx={size / 2} cy={size / 2} r={radius} fill="transparent" stroke="rgba(255, 255, 255, 0.03)" strokeWidth={strokeWidth} />
+          <circle cx={size / 2} cy={size / 2} r={radius} fill="transparent" stroke="rgba(0, 0, 0, 0.03)" strokeWidth={strokeWidth} />
           <circle 
             className="value-ring"
             cx={size / 2} 
             cy={size / 2} 
             r={radius} 
             fill="transparent" 
-            stroke="var(--gold)" 
+            stroke="var(--primary)" 
             strokeWidth={strokeWidth} 
             strokeDasharray={circumference}
             strokeDashoffset={circumference}
@@ -701,7 +706,7 @@ function App() {
           />
         </svg>
         <div style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
-          <span className="match-score-number" style={{ fontSize: '1.4rem', fontWeight: '800', color: 'var(--gold)', fontFamily: 'Outfit' }}>0%</span>
+          <span className="match-score-number" style={{ fontSize: '1.4rem', fontWeight: '800', color: 'var(--primary)', fontFamily: 'Outfit' }}>0%</span>
           <span style={{ fontSize: '0.55rem', color: 'var(--text-secondary)', textTransform: 'uppercase' }}>Overlap</span>
         </div>
       </div>
@@ -724,7 +729,7 @@ function App() {
         
         <div style={{ position: 'relative', width: '90px', height: '90px' }}>
           <svg width="90" height="90" viewBox="0 0 90 90" style={{ transform: 'rotate(-90deg)' }}>
-            <circle cx="45" cy="45" r={radius} fill="transparent" stroke="rgba(255, 255, 255, 0.03)" strokeWidth="6" />
+            <circle cx="45" cy="45" r={radius} fill="transparent" stroke="rgba(0, 0, 0, 0.03)" strokeWidth="6" />
             <circle 
               cx="45" 
               cy="45" 
@@ -753,7 +758,7 @@ function App() {
             />
           </svg>
           <div style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
-            <span style={{ fontSize: '1.1rem', fontWeight: 'bold', color: 'white' }}>{ready}/{total}</span>
+            <span style={{ fontSize: '1.1rem', fontWeight: 'bold', color: 'var(--text-primary)' }}>{ready}/{total}</span>
             <span style={{ fontSize: '0.6rem', color: 'var(--text-muted)' }}>Ready</span>
           </div>
         </div>
@@ -763,7 +768,7 @@ function App() {
           <button 
             onClick={() => setTalentFilter('all')} 
             className={`btn btn-secondary ${talentFilter === 'all' ? 'active' : ''}`}
-            style={{ padding: '0.2rem 0.5rem', fontSize: '0.65rem', borderRadius: '4px', border: '1px solid var(--glass-border)', width: 'auto' }}
+            style={{ padding: '0.2rem 0.5rem', fontSize: '0.65rem', borderRadius: '4px', border: '1px solid var(--panel-border)', width: 'auto' }}
           >
             All ({total})
           </button>
@@ -771,7 +776,7 @@ function App() {
           <button 
             onClick={() => setTalentFilter('ready')} 
             className={`btn btn-secondary ${talentFilter === 'ready' ? 'active' : ''}`}
-            style={{ padding: '0.2rem 0.5rem', fontSize: '0.65rem', borderRadius: '4px', border: '1px solid var(--glass-border)', color: 'var(--emerald)', width: 'auto' }}
+            style={{ padding: '0.2rem 0.5rem', fontSize: '0.65rem', borderRadius: '4px', border: '1px solid var(--panel-border)', color: 'var(--emerald)', width: 'auto' }}
           >
             Ready ({ready})
           </button>
@@ -779,7 +784,7 @@ function App() {
           <button 
             onClick={() => setTalentFilter('gap')} 
             className={`btn btn-secondary ${talentFilter === 'gap' ? 'active' : ''}`}
-            style={{ padding: '0.2rem 0.5rem', fontSize: '0.65rem', borderRadius: '4px', border: '1px solid var(--glass-border)', color: 'var(--rose)', width: 'auto' }}
+            style={{ padding: '0.2rem 0.5rem', fontSize: '0.65rem', borderRadius: '4px', border: '1px solid var(--panel-border)', color: 'var(--rose)', width: 'auto' }}
           >
             Gaps ({gaps})
           </button>
@@ -789,13 +794,14 @@ function App() {
   };
 
   return (
-    <div className="app-layout" ref={mainRef}>
+    // Binds state class modifier dynamically to parent frame wrapper
+    <div className={`app-layout ${darkMode ? 'theme-dark' : ''}`} ref={mainRef}>
       
       {/* 1. LEFT SIDEBAR (Icon-only, hover expanding) */}
       <aside className="sidebar">
         <div>
           <div className="sidebar-logo">
-            <Zap size={18} style={{ color: 'var(--gold)' }} />
+            <Zap size={18} style={{ color: 'var(--primary)' }} />
             <h1>RADIX Talent</h1>
           </div>
           
@@ -844,7 +850,27 @@ function App() {
         </div>
 
         <div className="sidebar-footer">
-          <div className="status-indicator-box">
+          {/* Sun / Moon Theme Switcher toggle widget */}
+          <div className="theme-switcher-container">
+            <button 
+              onClick={() => setDarkMode(!darkMode)}
+              className="theme-toggle-btn"
+            >
+              {darkMode ? (
+                <>
+                  <Sun size={12} style={{ color: 'var(--primary)' }} />
+                  <span>Light Mode</span>
+                </>
+              ) : (
+                <>
+                  <Moon size={12} style={{ color: 'var(--primary)' }} />
+                  <span>Dark Mode</span>
+                </>
+              )}
+            </button>
+          </div>
+
+          <div className="status-indicator-box" style={{ marginBottom: '0.35rem' }}>
             <div className={`status-dot-line ${jdParsedFile ? 'active' : ''}`}>
               <div className={`status-dot-light ${jdParsedFile ? 'active' : ''}`} />
               <span>JD Active</span>
@@ -858,7 +884,7 @@ function App() {
           <button 
             onClick={handleResetSession} 
             className="btn btn-secondary btn-danger" 
-            style={{ width: '100%', marginTop: '0.5rem', padding: '0.45rem' }}
+            style={{ width: '100%', padding: '0.45rem' }}
           >
             <RefreshCw size={12} /> Reset Cache
           </button>
@@ -888,7 +914,7 @@ function App() {
               <div className="side-by-side-grid">
                 <section className="glass-panel">
                   <h3 style={{ fontSize: '0.9rem', marginBottom: '0.75rem', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-                    <Briefcase size={14} style={{ color: 'var(--gold)' }} />
+                    <Briefcase size={14} style={{ color: 'var(--primary)' }} />
                     Job Description Configuration
                   </h3>
                   
@@ -946,7 +972,7 @@ function App() {
 
                 <section className="glass-panel">
                   <h3 style={{ fontSize: '0.9rem', marginBottom: '0.75rem', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-                    <Database size={14} style={{ color: 'var(--copper)' }} />
+                    <Database size={14} style={{ color: 'var(--secondary)' }} />
                     Extracted Capabilities Preview
                   </h3>
                   
@@ -963,9 +989,9 @@ function App() {
                     </div>
                   ) : parsedJdDetails ? (
                     <div>
-                      <div style={{ marginBottom: '1rem', borderBottom: '1px solid var(--glass-border)', paddingBottom: '0.5rem' }}>
+                      <div style={{ marginBottom: '1rem', borderBottom: '1px solid var(--panel-border)', paddingBottom: '0.5rem' }}>
                         <p style={{ fontSize: '0.7rem', color: 'var(--text-secondary)' }}>Target Role parsed</p>
-                        <h4 style={{ fontSize: '1rem', color: 'white' }}>{parsedJdDetails.role}</h4>
+                        <h4 style={{ fontSize: '1rem', color: 'var(--text-primary)' }}>{parsedJdDetails.role}</h4>
                         <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Company: {parsedJdDetails.company}</p>
                       </div>
                       
@@ -982,8 +1008,8 @@ function App() {
                     </div>
                   ) : (
                     <div className="empty-state">
-                      <Briefcase size={28} className="empty-state-icon" style={{ color: 'var(--gold)' }} />
-                      <p>No JD parsed yet. Select a sample or upload above to extract skills.</p>
+                      <Briefcase size={28} className="empty-state-icon" style={{ color: 'var(--primary)' }} />
+                      <p>No Job Description parsed yet. Select a sample or upload above to extract skills.</p>
                     </div>
                   )}
                 </section>
@@ -1001,7 +1027,7 @@ function App() {
               <div className="side-by-side-grid">
                 <section className="glass-panel">
                   <h3 style={{ fontSize: '0.9rem', marginBottom: '0.75rem', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-                    <FileText size={14} style={{ color: 'var(--gold)' }} />
+                    <FileText size={14} style={{ color: 'var(--primary)' }} />
                     Upload Candidate Resume
                   </h3>
                   
@@ -1059,7 +1085,7 @@ function App() {
 
                 <section className="glass-panel">
                   <h3 style={{ fontSize: '0.9rem', marginBottom: '0.75rem', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-                    <User size={14} style={{ color: 'var(--copper)' }} />
+                    <User size={14} style={{ color: 'var(--secondary)' }} />
                     Extracted Details Preview
                   </h3>
                   
@@ -1082,7 +1108,7 @@ function App() {
                         </div>
                         <div className="profile-basics">
                           <h3>{profile.name || "Extracting..."}</h3>
-                          <p style={{ fontSize: '0.7rem' }}><Mail size={10} /> {profile.email || "No email parsed"}</p>
+                          <p style={{ fontSize: '0.75rem' }}><Mail size={10} /> {profile.email || "No email parsed"}</p>
                         </div>
                       </div>
                       
@@ -1133,7 +1159,7 @@ function App() {
                     </div>
                   ) : (
                     <div className="empty-state">
-                      <FileText size={28} className="empty-state-icon" style={{ color: 'var(--gold)' }} />
+                      <FileText size={28} className="empty-state-icon" style={{ color: 'var(--primary)' }} />
                       <p>No Resume parsed yet. Select a sample or upload above to extract details.</p>
                     </div>
                   )}
@@ -1166,7 +1192,7 @@ function App() {
                 {/* Form fields */}
                 <section className="glass-panel" style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
                   <h3 style={{ fontSize: '0.9rem', display: 'flex', alignItems: 'center', gap: '0.4rem', borderBottom: '1px solid var(--glass-border)', paddingBottom: '0.4rem' }}>
-                    <User size={14} style={{ color: 'var(--gold)' }} />
+                    <User size={14} style={{ color: 'var(--primary)' }} />
                     Personal & Candidate Context
                   </h3>
                   
@@ -1258,13 +1284,13 @@ function App() {
                     <label>Hackathons & Certifications</label>
                     <div className="tag-container" style={{ marginBottom: '0.35rem' }}>
                       {(profile.hackathons || []).map((tag, i) => (
-                        <span key={i} className="profile-tag" style={{ borderColor: 'rgba(185, 116, 85, 0.25)', color: '#ffccbc' }}>
+                        <span key={i} className="profile-tag">
                           {tag}
                           <button onClick={() => removeTag('hackathons', i)}><X size={10} /></button>
                         </span>
                       ))}
                       {(profile.certifications || []).map((tag, i) => (
-                        <span key={i} className="profile-tag" style={{ borderColor: 'rgba(224, 169, 109, 0.25)', color: '#eedca2' }}>
+                        <span key={i} className="profile-tag">
                           {tag}
                           <button onClick={() => removeTag('certifications', i)}><X size={10} /></button>
                         </span>
@@ -1313,7 +1339,7 @@ function App() {
                   {/* Stats Count cards & Completeness gauge */}
                   <section className="glass-panel">
                     <h3 style={{ fontSize: '0.9rem', marginBottom: '0.75rem', display: 'flex', alignItems: 'center', gap: '0.4rem', borderBottom: '1px solid var(--glass-border)', paddingBottom: '0.4rem' }}>
-                      <Award size={14} style={{ color: 'var(--gold)' }} />
+                      <Award size={14} style={{ color: 'var(--primary)' }} />
                       Profile Stats & Completeness
                     </h3>
                     
@@ -1342,7 +1368,7 @@ function App() {
 
                   <section className="glass-panel">
                     <h3 style={{ fontSize: '0.9rem', marginBottom: '0.75rem', display: 'flex', alignItems: 'center', gap: '0.4rem', borderBottom: '1px solid var(--glass-border)', paddingBottom: '0.4rem' }}>
-                      <Code size={14} style={{ color: 'var(--copper)' }} />
+                      <Code size={14} style={{ color: 'var(--secondary)' }} />
                       Manage Skills ({ (profile.skills || []).length })
                     </h3>
 
@@ -1374,7 +1400,7 @@ function App() {
                           max="10"
                           value={newSkillLevel}
                           onChange={(e) => setNewSkillLevel(parseInt(e.target.value))}
-                          style={{ accentColor: 'var(--gold)', width: '100%', height: '4px', cursor: 'pointer' }}
+                          style={{ accentColor: 'var(--primary)', width: '100%', height: '4px', cursor: 'pointer' }}
                         />
                       </div>
                       <button onClick={addSkill} className="btn btn-primary" style={{ width: 'auto', padding: '0.4rem 0.5rem' }}><Plus size={12} /></button>
@@ -1410,7 +1436,7 @@ function App() {
                   {/* LIVE ESTIMATION MATRIX */}
                   <section className="glass-panel">
                     <h3 style={{ fontSize: '0.9rem', marginBottom: '0.5rem', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-                      <Sliders size={14} style={{ color: 'var(--gold)' }} />
+                      <Sliders size={14} style={{ color: 'var(--primary)' }} />
                       Live Skill Matrix Preview (Calculated 1-10)
                     </h3>
                     <p style={{ fontSize: '0.7rem', color: 'var(--text-secondary)', marginBottom: '0.5rem' }}>
@@ -1443,7 +1469,7 @@ function App() {
               <div className="side-by-side-grid">
                 <section className="glass-panel" style={{ alignSelf: 'start' }}>
                   <h3 style={{ fontSize: '0.9rem', marginBottom: '0.75rem', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-                    <Award size={14} style={{ color: 'var(--gold)' }} />
+                    <Award size={14} style={{ color: 'var(--primary)' }} />
                     Select Targets
                   </h3>
                   
@@ -1489,13 +1515,13 @@ function App() {
                 <section className="glass-panel">
                   {talentResult ? (
                     <div>
-                      <div className="talent-check-header" style={{ marginBottom: '1rem', borderBottom: '1px solid var(--glass-border)', paddingBottom: '0.5rem' }}>
+                      <div className="talent-check-header" style={{ marginBottom: '1rem', borderBottom: '1px solid var(--panel-border)', paddingBottom: '0.5rem' }}>
                         <div>
-                          <h4 style={{ fontSize: '0.95rem', color: 'white' }}>{talentResult.company}</h4>
+                          <h4 style={{ fontSize: '0.95rem', color: 'var(--text-primary)' }}>{talentResult.company}</h4>
                           <p style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>Target: {talentResult.role}</p>
                         </div>
                         <div className="talent-score-badge">
-                          <span className="talent-score-value" style={{ textShadow: '0 0 8px var(--gold)' }}>0%</span> readiness
+                          <span className="talent-score-value">0%</span> readiness
                         </div>
                       </div>
 
@@ -1529,7 +1555,7 @@ function App() {
                                 <div 
                                   className="level-indicator-fill-cand" 
                                   data-width={item.candidate_level * 10}
-                                  style={{ width: '0%', background: item.gap ? 'var(--rose)' : 'var(--gold-gradient)' }} 
+                                  style={{ width: '0%', background: item.gap ? 'var(--rose)' : 'var(--primary-gradient)' }} 
                                 />
                                 <div 
                                   className="level-indicator-fill-req" 
@@ -1543,7 +1569,7 @@ function App() {
                     </div>
                   ) : (
                     <div className="empty-state">
-                      <Award size={28} className="empty-state-icon" style={{ color: 'var(--gold)' }} />
+                      <Award size={28} className="empty-state-icon" style={{ color: 'var(--primary)' }} />
                       <p>Run Talent Check to see candidate readiness compared against standard company skill definitions.</p>
                     </div>
                   )}
@@ -1563,7 +1589,7 @@ function App() {
               <div className="side-by-side-grid">
                 <section className="glass-panel" style={{ alignSelf: 'start' }}>
                   <h3 style={{ fontSize: '0.9rem', marginBottom: '0.75rem', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-                    <Briefcase size={14} style={{ color: 'var(--gold)' }} />
+                    <Briefcase size={14} style={{ color: 'var(--primary)' }} />
                     Keyword Relevance Matching
                   </h3>
                   <p style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', marginBottom: '1rem' }}>
@@ -1582,11 +1608,11 @@ function App() {
                 <section className="glass-panel">
                   {matchResult ? (
                     <div>
-                      <div className="skill-match-container" style={{ background: 'rgba(0,0,0,0.25)', padding: '0.75rem', borderRadius: '6px', border: '1px solid var(--glass-border)', marginBottom: '1rem' }}>
+                      <div className="skill-match-container" style={{ background: 'rgba(0,0,0,0.01)', padding: '0.75rem', borderRadius: '6px', border: '1px solid var(--glass-border)', marginBottom: '1rem' }}>
                         {renderSkillMatchRing(matchResult.match_score)}
                         <div className="match-breakdown-details">
                           <p style={{ fontSize: '0.7rem', color: 'var(--text-secondary)', marginBottom: '0.15rem' }}>Parsed JD File Source:</p>
-                          <p style={{ fontSize: '0.75rem', fontWeight: 600, color: 'white', wordBreak: 'break-all' }}>{matchResult.jd_source_file}</p>
+                          <p style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-primary)', wordBreak: 'break-all' }}>{matchResult.jd_source_file}</p>
                         </div>
                       </div>
                       
@@ -1599,7 +1625,7 @@ function App() {
                           marginBottom: '1rem'
                         }}
                       >
-                        <h4 style={{ fontSize: '0.8rem', color: 'white', marginBottom: '0.25rem' }}>Matched Skills ({matchResult.matched_skills.length})</h4>
+                        <h4 style={{ fontSize: '0.8rem', color: 'var(--text-primary)', marginBottom: '0.25rem' }}>Matched Skills ({matchResult.matched_skills.length})</h4>
                         <div className="skill-chips-list">
                           {matchResult.matched_skills.map((skill, i) => (
                             <span key={i} className="chip chip-matched">{skill}</span>
@@ -1616,7 +1642,7 @@ function App() {
                           transition: 'all 0.2s ease'
                         }}
                       >
-                        <h4 style={{ fontSize: '0.8rem', color: 'white', marginBottom: '0.25rem' }}>Missing Skills ({matchResult.missing_skills.length})</h4>
+                        <h4 style={{ fontSize: '0.8rem', color: 'var(--text-primary)', marginBottom: '0.25rem' }}>Missing Skills ({matchResult.missing_skills.length})</h4>
                         <div className="skill-chips-list">
                           {matchResult.missing_skills.map((skill, i) => (
                             <span key={i} className="chip chip-missing">{skill}</span>
@@ -1627,7 +1653,7 @@ function App() {
                     </div>
                   ) : (
                     <div className="empty-state">
-                      <Sliders size={28} className="empty-state-icon" style={{ color: 'var(--gold)' }} />
+                      <Sliders size={28} className="empty-state-icon" style={{ color: 'var(--primary)' }} />
                       <p>Run the Skill Match analysis to visualize matched vs missing skillsets.</p>
                     </div>
                   )}
@@ -1643,7 +1669,7 @@ function App() {
       <aside className={`api-console-panel ${apiConsoleOpen ? '' : 'collapsed'}`}>
         <div className="api-console-header">
           <h3>
-            <Terminal size={12} style={{ color: 'var(--gold)' }} />
+            <Terminal size={12} style={{ color: 'var(--primary)' }} />
             API inspector
           </h3>
           <button 
@@ -1703,7 +1729,7 @@ function App() {
       <footer className="bottom-status-bar">
         <div className="status-bar-left">
           <div className="status-bar-item">
-            <span style={{ fontWeight: 600, color: 'var(--gold)' }}>RADIX STATUS:</span>
+            <span style={{ fontWeight: 600, color: 'var(--primary)' }}>RADIX STATUS:</span>
           </div>
           <div className="status-bar-item">
             <div className={`status-dot ${jdParsedFile ? 'active' : ''}`} />
@@ -1900,7 +1926,7 @@ function App() {
             <h3>5. Specific JD Relevance Overlap</h3>
             <div className="printable-grid-2">
               <div className="printable-score-box" style={{ borderColor: '#555' }}>
-                <div className="printable-score-value" style={{ color: 'var(--gold)' }}>{matchResult.match_score}%</div>
+                <div className="printable-score-value" style={{ color: 'var(--primary)' }}>{matchResult.match_score}%</div>
                 <div className="printable-score-label">Job Match overlap</div>
                 <div style={{ fontSize: '8pt', color: '#666', marginTop: '4px' }}>
                   JD File: {matchResult.jd_source_file}

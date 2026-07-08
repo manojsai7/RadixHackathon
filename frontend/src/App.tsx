@@ -118,10 +118,9 @@ function App() {
   // Notifications
   const [alertMsg, setAlertMsg] = useState<{ text: string; type: 'info' | 'success' | 'error' | null }>({ text: '', type: null });
 
-  // Modal pop-up states
-  const [showInfoModal, setShowInfoModal] = useState(false);
-  const [showSkillsModal, setShowSkillsModal] = useState(false);
-  const [showActivitiesModal, setShowActivitiesModal] = useState(false);
+  // Step Navigation
+  const [step, setStep] = useState(1);
+  const contentRef = useRef<HTMLDivElement>(null);
 
   // Company - Role Mapping for dropdowns
   const companyRoles: Record<string, string[]> = {
@@ -145,6 +144,16 @@ function App() {
       ease: "power2.out"
     });
   }, { scope: mainRef });
+
+  // GSAP animation for step switching
+  useGSAP(() => {
+    if (contentRef.current) {
+      gsap.fromTo(contentRef.current, 
+        { opacity: 0, y: 15 },
+        { opacity: 1, y: 0, duration: 0.4, ease: "power2.out" }
+      );
+    }
+  }, [step]);
 
   // 2. Animate Talent Check bars & scores on updates
   useGSAP(() => {
@@ -505,296 +514,287 @@ function App() {
   };
 
   return (
-    <div className="app-container" ref={mainRef}>
-      {/* HEADER */}
-      <header className="header">
-        <div className="logo-section">
-          <div className="logo-icon">
-            <Zap size={28} className="text-white" />
-          </div>
-          <div className="logo-text">
-            <h1>RADIX Talent Match</h1>
-            <p>Candidate Readiness & Skill Gap Analyzer Dashboard</p>
-          </div>
-        </div>
+    <div className="app-layout" ref={mainRef}>
+      {/* SIDEBAR */}
+      <aside className="sidebar">
         <div>
-          <button onClick={handleResetSession} className="btn btn-secondary btn-danger" style={{ width: 'auto' }}>
-            <RefreshCw size={14} /> Reset Session
+          <div className="sidebar-logo">
+            <Zap size={24} style={{ color: 'var(--primary)' }} />
+            <h1>RADIX Talent</h1>
+          </div>
+          
+          <nav className="sidebar-nav">
+            <button 
+              className={`sidebar-btn ${step === 1 ? 'active' : ''}`}
+              onClick={() => setStep(1)}
+            >
+              <FileText size={16} />
+              <span>1. Documents</span>
+            </button>
+            <button 
+              className={`sidebar-btn ${step === 2 ? 'active' : ''}`}
+              onClick={() => setStep(2)}
+            >
+              <User size={16} />
+              <span>2. Profile Builder</span>
+            </button>
+            <button 
+              className={`sidebar-btn ${step === 3 ? 'active' : ''}`}
+              onClick={() => setStep(3)}
+            >
+              <Award size={16} />
+              <span>3. Talent Check</span>
+            </button>
+            <button 
+              className={`sidebar-btn ${step === 4 ? 'active' : ''}`}
+              onClick={() => setStep(4)}
+            >
+              <Briefcase size={16} />
+              <span>4. Skill Match</span>
+            </button>
+            <button 
+              className={`sidebar-btn ${step === 5 ? 'active' : ''}`}
+              onClick={() => setStep(5)}
+            >
+              <Code size={16} />
+              <span>5. Summary Flow</span>
+            </button>
+          </nav>
+        </div>
+
+        <div className="sidebar-footer">
+          <div className="status-indicator-box">
+            <div className={`status-dot-line ${jdParsedFile ? 'active' : ''}`}>
+              <div className={`status-dot-light ${jdParsedFile ? 'active' : ''}`} />
+              <span>JD: {jdParsedFile ? 'Parsed' : 'Missing'}</span>
+            </div>
+            <div className={`status-dot-line ${resumeParsedFile ? 'active' : ''}`}>
+              <div className={`status-dot-light ${resumeParsedFile ? 'active' : ''}`} />
+              <span>Resume: {resumeParsedFile ? 'Parsed' : 'Missing'}</span>
+            </div>
+          </div>
+          
+          <button 
+            onClick={handleResetSession} 
+            className="btn btn-secondary btn-danger" 
+            style={{ width: '100%', marginTop: '1rem', padding: '0.6rem' }}
+          >
+            <RefreshCw size={12} /> Reset Session
           </button>
         </div>
-      </header>
+      </aside>
 
-      {/* ALERT NOTIFICATION PANEL */}
-      {alertMsg.text && (
-        <div className={`status-text-panel ${alertMsg.type === 'success' ? 'status-success' : alertMsg.type === 'error' ? 'status-info' : 'status-info'}`}>
-          <AlertCircle size={16} />
-          <span>{alertMsg.text}</span>
-        </div>
-      )}
-
-      {/* DASHBOARD GRID */}
-      <div className="dashboard-grid">
-        
-        {/* PANEL 1: DATA INGESTION */}
-        <section className="glass-panel">
-          <h2 className="section-title">
-            <FileText size={18} className="text-purple-400" />
-            1. Document Analytics
-          </h2>
-          
-          {/* JOB DESCRIPTION WORKSPACE */}
-          <div style={{ marginBottom: '2rem' }}>
-            <h3 style={{ fontSize: '0.95rem', fontWeight: 600, marginBottom: '0.75rem', color: '#e2e8f0' }}>Job Description Ingestion</h3>
-            
-            <div className="form-group">
-              <label>Select Sample JD</label>
-              <select 
-                value={selectedJdSample} 
-                onChange={(e) => {
-                  setSelectedJdSample(e.target.value);
-                  setJdFile(null);
-                }} 
-                className="select-input"
-              >
-                {sampleJds.map(jd => (
-                  <option key={jd} value={jd}>{jd.replace('.txt', '').replace(/_/g, ' ')}</option>
-                ))}
-              </select>
-            </div>
-            
-            <div className="upload-container">
-              <label className="upload-label">Or upload custom file (TXT/PDF/DOCX)</label>
-              <div 
-                className={`dropzone ${jdFile ? 'active' : ''}`}
-                onClick={() => document.getElementById('jd-file-input')?.click()}
-              >
-                <input 
-                  id="jd-file-input" 
-                  type="file" 
-                  accept=".txt,.pdf,.docx" 
-                  style={{ display: 'none' }}
-                  onChange={(e) => {
-                    if (e.target.files && e.target.files[0]) {
-                      setJdFile(e.target.files[0]);
-                      setSelectedJdSample('');
-                    }
-                  }}
-                />
-                <Briefcase size={24} className="dropzone-icon" />
-                {jdFile ? (
-                  <p className="dropzone-filename"><Check size={14} /> {jdFile.name}</p>
-                ) : (
-                  <p>Click to select custom JD</p>
-                )}
-              </div>
-            </div>
-            
-            <button 
-              onClick={handleParseJD} 
-              disabled={jdLoading}
-              className="btn btn-primary"
-            >
-              {jdLoading ? <RefreshCw size={14} className="animate-spin" /> : <Play size={14} />} Parse Job Description
-            </button>
-            
-            {jdParsedFile && (
-              <div style={{ marginTop: '0.75rem', background: 'rgba(16, 185, 129, 0.05)', border: '1px solid rgba(16, 185, 129, 0.15)', padding: '0.6rem', borderRadius: '8px', fontSize: '0.8rem', color: '#a7f3d0' }}>
-                <Check size={12} style={{ marginRight: '0.25rem', inlineSize: 'auto' }} />
-                Parsed: <strong>{jdParsedFile}</strong> ({jdSkillsCount} skills extracted)
-              </div>
-            )}
+      {/* MAIN WORKSPACE */}
+      <main className="main-workspace">
+        {/* Alert Notification inside main space */}
+        {alertMsg.text && (
+          <div className={`status-text-panel ${alertMsg.type === 'success' ? 'status-success' : alertMsg.type === 'error' ? 'status-info' : 'status-info'}`} style={{ margin: 0 }}>
+            <AlertCircle size={16} />
+            <span>{alertMsg.text}</span>
           </div>
-          
-          {/* RESUME WORKSPACE */}
-          <div>
-            <h3 style={{ fontSize: '0.95rem', fontWeight: 600, marginBottom: '0.75rem', color: '#e2e8f0' }}>Resume Ingestion</h3>
-            
-            <div className="form-group">
-              <label>Select Sample Resume</label>
-              <select 
-                value={selectedResumeSample} 
-                onChange={(e) => {
-                  setSelectedResumeSample(e.target.value);
-                  setResumeFile(null);
-                }} 
-                className="select-input"
-              >
-                {sampleResumes.map(res => (
-                  <option key={res} value={res}>{res.replace('.txt', '').replace('Resume-', '').replace(/_/g, ' ')}</option>
-                ))}
-              </select>
-            </div>
-            
-            <div className="upload-container">
-              <label className="upload-label">Or upload custom Resume (TXT/PDF/DOCX)</label>
-              <div 
-                className={`dropzone ${resumeFile ? 'active' : ''}`}
-                onClick={() => document.getElementById('resume-file-input')?.click()}
-              >
-                <input 
-                  id="resume-file-input" 
-                  type="file" 
-                  accept=".txt,.pdf,.docx" 
-                  style={{ display: 'none' }}
-                  onChange={(e) => {
-                    if (e.target.files && e.target.files[0]) {
-                      setResumeFile(e.target.files[0]);
-                      setSelectedResumeSample('');
-                    }
-                  }}
-                />
-                <FileText size={24} className="dropzone-icon" />
-                {resumeFile ? (
-                  <p className="dropzone-filename"><Check size={14} /> {resumeFile.name}</p>
-                ) : (
-                  <p>Click to select custom Resume</p>
-                )}
-              </div>
-            </div>
-            
-            <button 
-              onClick={handleParseResume} 
-              disabled={resumeLoading}
-              className="btn btn-primary"
-            >
-              {resumeLoading ? <RefreshCw size={14} className="animate-spin" /> : <Play size={14} />} Parse Resume
-            </button>
-            
-            {resumeParsedFile && (
-              <div style={{ marginTop: '0.75rem', background: 'rgba(16, 185, 129, 0.05)', border: '1px solid rgba(16, 185, 129, 0.15)', padding: '0.6rem', borderRadius: '8px', fontSize: '0.8rem', color: '#a7f3d0' }}>
-                <Check size={12} style={{ marginRight: '0.25rem', inlineSize: 'auto' }} />
-                Parsed: <strong>{resumeParsedFile}</strong> (Profile updated!)
-              </div>
-            )}
-          </div>
-        </section>
+        )}
 
-        {/* PANEL 2: PROFILE BUILDER */}
-        <section className="glass-panel">
-          <h2 className="section-title">
-            <User size={18} className="text-purple-400" />
-            2. Candidate Profile Builder
-          </h2>
-
-          <div className="profile-summary-card">
-            {/* Avatar & Details */}
-            <div className="profile-summary-header">
-              <div className="profile-avatar">
-                {profile.name ? profile.name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase() : 'C'}
+        <div className="step-container" ref={contentRef}>
+          {/* STEP 1: DOCUMENTS */}
+          {step === 1 && (
+            <div className="step-container">
+              <div className="step-header">
+                <h2>1. Document Analytics & Ingestion</h2>
+                <p>Upload a job description and a resume, or choose from our sample sets to extract structured skills and technologies.</p>
               </div>
-              <div className="profile-basics">
-                <h3>{profile.name || "Unnamed Candidate"}</h3>
-                <p style={{ marginTop: '0.2rem' }}>
-                  <Mail size={12} /> {profile.email || "No email provided"}
-                </p>
-                {profile.education && (
-                  <p style={{ marginTop: '0.1rem', color: 'var(--text-secondary)' }}>
-                    <Briefcase size={12} /> {profile.education}
-                  </p>
-                )}
-              </div>
-            </div>
-
-            {/* Preferred Roles Display */}
-            {profile.preferred_roles && profile.preferred_roles.length > 0 && (
-              <div>
-                <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', display: 'block', marginBottom: '0.25rem', fontWeight: 600 }}>Preferred Roles:</span>
-                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.3rem' }}>
-                  {profile.preferred_roles.map((role, i) => (
-                    <span key={i} className="badge badge-OTHER" style={{ fontSize: '0.75rem' }}>{role}</span>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {/* Stat Counters */}
-            <div className="profile-stat-grid">
-              <div className="profile-stat-box">
-                <strong>{profile.skills?.length || 0}</strong>
-                Parsed Skills
-              </div>
-              <div className="profile-stat-box">
-                <strong>{profile.certifications?.length || 0}</strong>
-                Certifications
-              </div>
-              <div className="profile-stat-box">
-                <strong>{profile.internships?.length || 0}</strong>
-                Internships
-              </div>
-              <div className="profile-stat-box">
-                <strong>{profile.hackathons?.length || 0}</strong>
-                Hackathons
-              </div>
-            </div>
-
-            {/* Actions to trigger modals */}
-            <div className="profile-actions-grid">
-              <button onClick={() => setShowInfoModal(true)} className="btn btn-secondary">
-                Edit Details
-              </button>
-              <button onClick={() => setShowSkillsModal(true)} className="btn btn-secondary">
-                Manage Skills
-              </button>
-              <button onClick={() => setShowActivitiesModal(true)} className="btn btn-secondary" style={{ gridColumn: 'span 2' }}>
-                Manage Experiences & Certs
-              </button>
-            </div>
-
-            <button 
-              onClick={handleSaveProfile} 
-              className="btn btn-primary" 
-              style={{ marginTop: '0.5rem', background: 'linear-gradient(135deg, #10b981, #059669)', boxShadow: '0 4px 15px rgba(16, 185, 129, 0.25)' }}
-            >
-              <CheckSquare size={14} /> Save Profile & Update Skills
-            </button>
-          </div>
-
-          {/* ---------- MODAL 1: EDIT DETAILS ---------- */}
-          {showInfoModal && (
-            <div className="modal-overlay" onClick={() => setShowInfoModal(false)}>
-              <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-                <div className="modal-header">
-                  <h3>Edit Personal Information</h3>
-                  <button className="modal-close-btn" onClick={() => setShowInfoModal(false)}>
-                    <X size={18} />
-                  </button>
-                </div>
-                <div className="modal-body">
+              <div className="side-by-side-grid">
+                {/* Job Description Workspace */}
+                <section className="glass-panel" style={{ margin: 0 }}>
+                  <h3 style={{ fontSize: '1rem', fontWeight: 700, marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'white' }}>
+                    <Briefcase size={16} style={{ color: 'var(--primary)' }} />
+                    Job Description Ingestion
+                  </h3>
+                  
                   <div className="form-group">
-                    <label>Name</label>
+                    <label>Select Sample JD</label>
+                    <select 
+                      value={selectedJdSample} 
+                      onChange={(e) => {
+                        setSelectedJdSample(e.target.value);
+                        setJdFile(null);
+                      }} 
+                      className="select-input"
+                    >
+                      {sampleJds.map(jd => (
+                        <option key={jd} value={jd}>{jd.replace('.txt', '').replace(/_/g, ' ')}</option>
+                      ))}
+                    </select>
+                  </div>
+                  
+                  <div className="upload-container">
+                    <label className="upload-label">Or upload custom file (TXT/PDF/DOCX)</label>
+                    <div 
+                      className={`dropzone ${jdFile ? 'active' : ''}`}
+                      onClick={() => document.getElementById('jd-file-input')?.click()}
+                    >
+                      <input 
+                        id="jd-file-input" 
+                        type="file" 
+                        accept=".txt,.pdf,.docx" 
+                        style={{ display: 'none' }}
+                        onChange={(e) => {
+                          if (e.target.files && e.target.files[0]) {
+                            setJdFile(e.target.files[0]);
+                            setSelectedJdSample('');
+                          }
+                        }}
+                      />
+                      <Briefcase size={24} className="dropzone-icon" />
+                      {jdFile ? (
+                        <p className="dropzone-filename"><Check size={14} /> {jdFile.name}</p>
+                      ) : (
+                        <p>Click to select custom JD</p>
+                      )}
+                    </div>
+                  </div>
+                  
+                  <button 
+                    onClick={handleParseJD} 
+                    disabled={jdLoading}
+                    className="btn btn-primary"
+                    style={{ background: 'linear-gradient(135deg, var(--primary), var(--secondary))' }}
+                  >
+                    {jdLoading ? <RefreshCw size={14} className="animate-spin" /> : <Play size={14} />} Parse Job Description
+                  </button>
+                  
+                  {jdParsedFile && (
+                    <div style={{ marginTop: '0.75rem', background: 'rgba(224, 169, 109, 0.05)', border: '1px solid rgba(224, 169, 109, 0.15)', padding: '0.6rem', borderRadius: '8px', fontSize: '0.8rem', color: '#eed1b0' }}>
+                      <Check size={12} style={{ marginRight: '0.25rem', inlineSize: 'auto' }} />
+                      Parsed: <strong>{jdParsedFile}</strong> ({jdSkillsCount} skills extracted)
+                    </div>
+                  )}
+                </section>
+
+                {/* Resume Ingestion Workspace */}
+                <section className="glass-panel" style={{ margin: 0 }}>
+                  <h3 style={{ fontSize: '1rem', fontWeight: 700, marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'white' }}>
+                    <FileText size={16} style={{ color: 'var(--primary)' }} />
+                    Resume Ingestion
+                  </h3>
+                  
+                  <div className="form-group">
+                    <label>Select Sample Resume</label>
+                    <select 
+                      value={selectedResumeSample} 
+                      onChange={(e) => {
+                        setSelectedResumeSample(e.target.value);
+                        setResumeFile(null);
+                      }} 
+                      className="select-input"
+                    >
+                      {sampleResumes.map(res => (
+                        <option key={res} value={res}>{res.replace('.txt', '').replace('Resume-', '').replace(/_/g, ' ')}</option>
+                      ))}
+                    </select>
+                  </div>
+                  
+                  <div className="upload-container">
+                    <label className="upload-label">Or upload custom Resume (TXT/PDF/DOCX)</label>
+                    <div 
+                      className={`dropzone ${resumeFile ? 'active' : ''}`}
+                      onClick={() => document.getElementById('resume-file-input')?.click()}
+                    >
+                      <input 
+                        id="resume-file-input" 
+                        type="file" 
+                        accept=".txt,.pdf,.docx" 
+                        style={{ display: 'none' }}
+                        onChange={(e) => {
+                          if (e.target.files && e.target.files[0]) {
+                            setResumeFile(e.target.files[0]);
+                            setSelectedResumeSample('');
+                          }
+                        }}
+                      />
+                      <FileText size={24} className="dropzone-icon" />
+                      {resumeFile ? (
+                        <p className="dropzone-filename"><Check size={14} /> {resumeFile.name}</p>
+                      ) : (
+                        <p>Click to select custom Resume</p>
+                      )}
+                    </div>
+                  </div>
+                  
+                  <button 
+                    onClick={handleParseResume} 
+                    disabled={resumeLoading}
+                    className="btn btn-primary"
+                    style={{ background: 'linear-gradient(135deg, var(--primary), var(--secondary))' }}
+                  >
+                    {resumeLoading ? <RefreshCw size={14} className="animate-spin" /> : <Play size={14} />} Parse Resume
+                  </button>
+                  
+                  {resumeParsedFile && (
+                    <div style={{ marginTop: '0.75rem', background: 'rgba(224, 169, 109, 0.05)', border: '1px solid rgba(224, 169, 109, 0.15)', padding: '0.6rem', borderRadius: '8px', fontSize: '0.8rem', color: '#eed1b0' }}>
+                      <Check size={12} style={{ marginRight: '0.25rem', inlineSize: 'auto' }} />
+                      Parsed: <strong>{resumeParsedFile}</strong> (Profile updated!)
+                    </div>
+                  )}
+                </section>
+              </div>
+            </div>
+          )}
+
+          {/* STEP 2: PROFILE BUILDER */}
+          {step === 2 && (
+            <div className="step-container">
+              <div className="step-header">
+                <h2>2. Candidate Profile Builder</h2>
+                <p>Customize candidate profile details, edit parsed skills, confidence levels, and credentials manually.</p>
+              </div>
+              <div className="side-by-side-grid">
+                
+                {/* Personal Information & Credentials Form */}
+                <section className="glass-panel" style={{ margin: 0 }}>
+                  <h3 style={{ fontSize: '1rem', fontWeight: 700, marginBottom: '1.25rem', display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'white' }}>
+                    <User size={16} style={{ color: 'var(--primary)' }} />
+                    Personal Details & Credentials
+                  </h3>
+                  
+                  <div className="form-group">
+                    <label>Candidate Name</label>
                     <input 
                       type="text" 
                       value={profile.name} 
                       onChange={(e) => setProfile({ ...profile, name: e.target.value })} 
                       className="text-input"
-                      placeholder="Candidate Name"
+                      placeholder="Name"
                     />
                   </div>
-                  <div className="form-group">
-                    <label>Email</label>
-                    <input 
-                      type="email" 
-                      value={profile.email} 
-                      onChange={(e) => setProfile({ ...profile, email: e.target.value })} 
-                      className="text-input"
-                      placeholder="email@example.com"
-                    />
+                  
+                  <div className="form-row">
+                    <div className="form-group">
+                      <label>Email Address</label>
+                      <input 
+                        type="email" 
+                        value={profile.email} 
+                        onChange={(e) => setProfile({ ...profile, email: e.target.value })} 
+                        className="text-input"
+                        placeholder="email@example.com"
+                      />
+                    </div>
+                    <div className="form-group">
+                      <label>Education</label>
+                      <input 
+                        type="text" 
+                        value={profile.education} 
+                        onChange={(e) => setProfile({ ...profile, education: e.target.value })} 
+                        className="text-input"
+                        placeholder="Degree, Institution"
+                      />
+                    </div>
                   </div>
-                  <div className="form-group">
-                    <label>Education</label>
-                    <input 
-                      type="text" 
-                      value={profile.education} 
-                      onChange={(e) => setProfile({ ...profile, education: e.target.value })} 
-                      className="text-input"
-                      placeholder="Degree, Institution"
-                    />
-                  </div>
-                  <div className="form-group">
+
+                  <div className="form-group" style={{ marginTop: '1rem' }}>
                     <label>Preferred Roles</label>
                     <div className="tag-container" style={{ marginBottom: '0.5rem' }}>
                       {profile.preferred_roles.map((tag, i) => (
-                        <span key={i} className="profile-tag" style={{ borderColor: 'rgba(99, 102, 241, 0.3)', color: '#c7d2fe' }}>
+                        <span key={i} className="profile-tag" style={{ borderColor: 'rgba(224, 169, 109, 0.3)', color: '#eed1b0' }}>
                           {tag}
                           <button onClick={() => removeTag('preferred_roles', i)}><X size={10} /></button>
                         </span>
@@ -807,116 +807,15 @@ function App() {
                         value={newPrefRole} 
                         onChange={(e) => setNewPrefRole(e.target.value)} 
                         className="text-input" 
-                        placeholder="Add Preferred Role (e.g. Software Engineer)"
+                        placeholder="Add Preferred Role"
                         style={{ padding: '0.45rem' }}
                         onKeyDown={(e) => e.key === 'Enter' && addTag('preferred_roles', newPrefRole, setNewPrefRole)}
                       />
                       <button onClick={() => addTag('preferred_roles', newPrefRole, setNewPrefRole)} className="btn btn-secondary" style={{ width: 'auto', padding: '0.45rem' }}><Plus size={14} /></button>
                     </div>
                   </div>
-                </div>
-                <div className="modal-footer">
-                  <button onClick={() => setShowInfoModal(false)} className="btn btn-primary">
-                    Done
-                  </button>
-                </div>
-              </div>
-            </div>
-          )}
 
-          {/* ---------- MODAL 2: MANAGE SKILLS ---------- */}
-          {showSkillsModal && (
-            <div className="modal-overlay" onClick={() => setShowSkillsModal(false)}>
-              <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-                <div className="modal-header">
-                  <h3>Manage Profile Skillset</h3>
-                  <button className="modal-close-btn" onClick={() => setShowSkillsModal(false)}>
-                    <X size={18} />
-                  </button>
-                </div>
-                <div className="modal-body">
-                  <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr 1fr auto', gap: '0.5rem', marginBottom: '1rem', alignItems: 'center' }}>
-                    <input 
-                      type="text" 
-                      value={newSkillName}
-                      onChange={(e) => setNewSkillName(e.target.value)}
-                      className="text-input"
-                      placeholder="Skill name"
-                      onKeyDown={(e) => e.key === 'Enter' && addSkill()}
-                    />
-                    <select 
-                      value={newSkillCat} 
-                      onChange={(e) => setNewSkillCat(e.target.value)} 
-                      className="select-input"
-                    >
-                      {["COD", "DSA", "OOD", "APTI", "COMM", "AI", "CLOUD", "SQL", "SWE", "SYSD", "NETW", "OS", "OTHER"].map(cat => (
-                        <option key={cat} value={cat}>{cat}</option>
-                      ))}
-                    </select>
-                    <select 
-                      value={newSkillConf} 
-                      onChange={(e) => setNewSkillConf(e.target.value as any)} 
-                      className="select-input"
-                    >
-                      <option value="high">High</option>
-                      <option value="medium">Medium</option>
-                      <option value="low">Low</option>
-                    </select>
-                    <button onClick={addSkill} className="btn btn-primary" style={{ width: 'auto', padding: '0.65rem' }}><Plus size={14} /></button>
-                  </div>
-
-                  <div className="skills-list-editor" style={{ maxHeight: '400px' }}>
-                    {profile.skills.map((skill, idx) => (
-                      <div key={idx} className="skill-edit-item">
-                        <div className="skill-info-block">
-                          <span className="skill-info-name">{skill.skill_name}</span>
-                          <span className={`badge badge-${skill.category_code}`} style={{ display: 'inline-block', width: 'fit-content', marginTop: '0.2rem' }}>{skill.category_code}</span>
-                        </div>
-                        <div className="skill-meta-block">
-                          <select 
-                            value={skill.confidence} 
-                            onChange={(e) => updateSkillConfidence(idx, e.target.value as any)}
-                            className="skill-confidence-select"
-                          >
-                            <option value="high">High</option>
-                            <option value="medium">Medium</option>
-                            <option value="low">Low</option>
-                          </select>
-                          <button onClick={() => removeSkill(idx)} className="skill-delete-btn"><Trash2 size={12} /></button>
-                        </div>
-                      </div>
-                    ))}
-                    {profile.skills.length === 0 && (
-                      <div className="empty-state">
-                        <Code size={18} className="empty-state-icon" />
-                        <p>No skills listed in profile. Add skills manually above.</p>
-                      </div>
-                    )}
-                  </div>
-                </div>
-                <div className="modal-footer">
-                  <button onClick={() => setShowSkillsModal(false)} className="btn btn-primary">
-                    Done
-                  </button>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* ---------- MODAL 3: MANAGE EXPERIENCES & CERTS ---------- */}
-          {showActivitiesModal && (
-            <div className="modal-overlay" onClick={() => setShowActivitiesModal(false)}>
-              <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-                <div className="modal-header">
-                  <h3>Manage Experiences & Certifications</h3>
-                  <button className="modal-close-btn" onClick={() => setShowActivitiesModal(false)}>
-                    <X size={18} />
-                  </button>
-                </div>
-                <div className="modal-body" style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
-                  
-                  {/* Internships Tag Manager */}
-                  <div className="form-group">
+                  <div className="form-group" style={{ marginTop: '1rem' }}>
                     <label>Internships</label>
                     <div className="tag-container" style={{ marginBottom: '0.5rem' }}>
                       {profile.internships.map((tag, i) => (
@@ -941,235 +840,427 @@ function App() {
                     </div>
                   </div>
 
-                  {/* Hackathons Tag Manager */}
-                  <div className="form-group">
-                    <label>Hackathons</label>
+                  <div className="form-group" style={{ marginTop: '1rem' }}>
+                    <label>Hackathons & Certs</label>
                     <div className="tag-container" style={{ marginBottom: '0.5rem' }}>
                       {profile.hackathons.map((tag, i) => (
-                        <span key={i} className="profile-tag" style={{ borderColor: 'rgba(16, 185, 129, 0.3)', color: '#a7f3d0' }}>
+                        <span key={i} className="profile-tag" style={{ borderColor: 'rgba(185, 116, 85, 0.3)', color: '#dcb09c' }}>
                           {tag}
                           <button onClick={() => removeTag('hackathons', i)}><X size={10} /></button>
                         </span>
                       ))}
-                      {profile.hackathons.length === 0 && <span style={{ color: 'var(--text-muted)', fontSize: '0.75rem' }}>No hackathons added</span>}
-                    </div>
-                    <div className="tag-input-wrapper">
-                      <input 
-                        type="text" 
-                        value={newHackathon} 
-                        onChange={(e) => setNewHackathon(e.target.value)} 
-                        className="text-input" 
-                        placeholder="Add Hackathon"
-                        style={{ padding: '0.45rem' }}
-                        onKeyDown={(e) => e.key === 'Enter' && addTag('hackathons', newHackathon, setNewHackathon)}
-                      />
-                      <button onClick={() => addTag('hackathons', newHackathon, setNewHackathon)} className="btn btn-secondary" style={{ width: 'auto', padding: '0.45rem' }}><Plus size={14} /></button>
-                    </div>
-                  </div>
-
-                  {/* Certifications Tag Manager */}
-                  <div className="form-group">
-                    <label>Certifications</label>
-                    <div className="tag-container" style={{ marginBottom: '0.5rem' }}>
                       {profile.certifications.map((tag, i) => (
-                        <span key={i} className="profile-tag" style={{ borderColor: 'rgba(245, 158, 11, 0.3)', color: '#fde68a' }}>
+                        <span key={i} className="profile-tag" style={{ borderColor: 'rgba(212, 175, 55, 0.3)', color: '#eedca2' }}>
                           {tag}
                           <button onClick={() => removeTag('certifications', i)}><X size={10} /></button>
                         </span>
                       ))}
-                      {profile.certifications.length === 0 && <span style={{ color: 'var(--text-muted)', fontSize: '0.75rem' }}>No certifications added</span>}
+                      {(profile.hackathons.length === 0 && profile.certifications.length === 0) && <span style={{ color: 'var(--text-muted)', fontSize: '0.75rem' }}>No hackathons/certs added</span>}
                     </div>
-                    <div className="tag-input-wrapper">
-                      <input 
-                        type="text" 
-                        value={newCert} 
-                        onChange={(e) => setNewCert(e.target.value)} 
-                        className="text-input" 
-                        placeholder="Add Certification"
-                        style={{ padding: '0.45rem' }}
-                        onKeyDown={(e) => e.key === 'Enter' && addTag('certifications', newCert, setNewCert)}
-                      />
-                      <button onClick={() => addTag('certifications', newCert, setNewCert)} className="btn btn-secondary" style={{ width: 'auto', padding: '0.45rem' }}><Plus size={14} /></button>
+                    <div style={{ display: 'flex', gap: '0.5rem' }}>
+                      <div className="tag-input-wrapper" style={{ flex: 1 }}>
+                        <input 
+                          type="text" 
+                          value={newHackathon} 
+                          onChange={(e) => setNewHackathon(e.target.value)} 
+                          className="text-input" 
+                          placeholder="Add Hackathon"
+                          style={{ padding: '0.45rem' }}
+                          onKeyDown={(e) => e.key === 'Enter' && addTag('hackathons', newHackathon, setNewHackathon)}
+                        />
+                        <button onClick={() => addTag('hackathons', newHackathon, setNewHackathon)} className="btn btn-secondary" style={{ width: 'auto', padding: '0.45rem' }}><Plus size={14} /></button>
+                      </div>
+                      <div className="tag-input-wrapper" style={{ flex: 1 }}>
+                        <input 
+                          type="text" 
+                          value={newCert} 
+                          onChange={(e) => setNewCert(e.target.value)} 
+                          className="text-input" 
+                          placeholder="Add Cert"
+                          style={{ padding: '0.45rem' }}
+                          onKeyDown={(e) => e.key === 'Enter' && addTag('certifications', newCert, setNewCert)}
+                        />
+                        <button onClick={() => addTag('certifications', newCert, setNewCert)} className="btn btn-secondary" style={{ width: 'auto', padding: '0.45rem' }}><Plus size={14} /></button>
+                      </div>
                     </div>
                   </div>
 
-                </div>
-                <div className="modal-footer">
-                  <button onClick={() => setShowActivitiesModal(false)} className="btn btn-primary">
-                    Done
+                  <button 
+                    onClick={handleSaveProfile} 
+                    className="btn btn-primary" 
+                    style={{ marginTop: '1.5rem', background: 'linear-gradient(135deg, #10b981, #059669)', boxShadow: '0 4px 15px rgba(16, 185, 129, 0.25)' }}
+                  >
+                    <CheckSquare size={14} /> Save Profile & Update Skills
                   </button>
-                </div>
+                </section>
+
+                {/* Skills Manager Panel */}
+                <section className="glass-panel" style={{ margin: 0 }}>
+                  <h3 style={{ fontSize: '1rem', fontWeight: 700, marginBottom: '1.25rem', display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'white' }}>
+                    <Code size={16} style={{ color: 'var(--primary)' }} />
+                    Manage Candidate Skills ({profile.skills?.length || 0})
+                  </h3>
+
+                  <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr 1fr auto', gap: '0.4rem', marginBottom: '1rem', alignItems: 'center' }}>
+                    <input 
+                      type="text" 
+                      value={newSkillName}
+                      onChange={(e) => setNewSkillName(e.target.value)}
+                      className="text-input"
+                      placeholder="Skill name"
+                      onKeyDown={(e) => e.key === 'Enter' && addSkill()}
+                      style={{ padding: '0.45rem' }}
+                    />
+                    <select 
+                      value={newSkillCat} 
+                      onChange={(e) => setNewSkillCat(e.target.value)} 
+                      className="select-input"
+                      style={{ padding: '0.45rem' }}
+                    >
+                      {["COD", "DSA", "OOD", "APTI", "COMM", "AI", "CLOUD", "SQL", "SWE", "SYSD", "NETW", "OS", "OTHER"].map(cat => (
+                        <option key={cat} value={cat}>{cat}</option>
+                      ))}
+                    </select>
+                    <select 
+                      value={newSkillConf} 
+                      onChange={(e) => setNewSkillConf(e.target.value as any)} 
+                      className="select-input"
+                      style={{ padding: '0.45rem' }}
+                    >
+                      <option value="high">High</option>
+                      <option value="medium">Medium</option>
+                      <option value="low">Low</option>
+                    </select>
+                    <button onClick={addSkill} className="btn btn-primary" style={{ width: 'auto', padding: '0.5rem 0.65rem' }}><Plus size={14} /></button>
+                  </div>
+
+                  <div className="skills-list-editor" style={{ maxHeight: '420px', overflowY: 'auto' }}>
+                    {profile.skills.map((skill, idx) => (
+                      <div key={idx} className="skill-edit-item" style={{ background: 'rgba(255, 255, 255, 0.01)', border: '1px solid rgba(255, 255, 255, 0.03)' }}>
+                        <div className="skill-info-block">
+                          <span className="skill-info-name">{skill.skill_name}</span>
+                          <span className={`badge badge-${skill.category_code}`} style={{ display: 'inline-block', width: 'fit-content', marginTop: '0.2rem' }}>{skill.category_code}</span>
+                        </div>
+                        <div className="skill-meta-block">
+                          <select 
+                            value={skill.confidence} 
+                            onChange={(e) => updateSkillConfidence(idx, e.target.value as any)}
+                            className="skill-confidence-select"
+                          >
+                            <option value="high">High</option>
+                            <option value="medium">Medium</option>
+                            <option value="low">Low</option>
+                          </select>
+                          <button onClick={() => removeSkill(idx)} className="skill-delete-btn"><Trash2 size={12} /></button>
+                        </div>
+                      </div>
+                    ))}
+                    {profile.skills.length === 0 && (
+                      <div className="empty-state" style={{ padding: '2rem 0' }}>
+                        <Code size={24} className="empty-state-icon" />
+                        <p>No skills added yet. Parse a resume or use the editor to add manually.</p>
+                      </div>
+                    )}
+                  </div>
+                </section>
+
               </div>
             </div>
           )}
-        </section>
 
-        {/* PANEL 3: DIAGNOSTICS & VERIFICATION */}
-        <section className="glass-panel results-grid">
-          
-          {/* TALENT CHECK DIAGNOSTICS */}
-          <div className="glass-panel" style={{ background: 'rgba(255, 255, 255, 0.02)', padding: '1.25rem' }}>
-            <h2 className="section-title">
-              <Award size={18} className="text-purple-400" />
-              3. Company Talent Check
-            </h2>
-            
-            <div className="form-row" style={{ marginBottom: '1rem' }}>
-              <div className="form-group">
-                <label>Target Company</label>
-                <select 
-                  value={selectedCompany} 
-                  onChange={(e) => {
-                    setSelectedCompany(e.target.value);
-                    // Update role default based on company
-                    setSelectedRole(companyRoles[e.target.value][0]);
-                  }} 
-                  className="select-input"
-                >
-                  <option value="Google">Google</option>
-                  <option value="Microsoft">Microsoft</option>
-                  <option value="Oracle Financial Services Software">Oracle Financial Services Software</option>
-                </select>
+          {/* STEP 3: TALENT CHECK */}
+          {step === 3 && (
+            <div className="step-container">
+              <div className="step-header">
+                <h2>3. Company Talent Check Analyzer</h2>
+                <p>Select target corporate benchmarks to match the candidate's profile level indicators against industry expectations.</p>
               </div>
-              
-              <div className="form-group">
-                <label>Target Role</label>
-                <select 
-                  value={selectedRole} 
-                  onChange={(e) => setSelectedRole(e.target.value)} 
-                  className="select-input"
-                >
-                  {companyRoles[selectedCompany]?.map(role => (
-                    <option key={role} value={role}>{role}</option>
-                  ))}
-                </select>
-              </div>
-            </div>
-            
-            <button 
-              onClick={handleTalentCheck} 
-              disabled={talentLoading}
-              className="btn btn-primary"
-              style={{ background: 'linear-gradient(135deg, var(--primary), var(--secondary))' }}
-            >
-              {talentLoading ? <RefreshCw size={14} className="animate-spin" /> : <Play size={14} />} Analyze Readiness Bar
-            </button>
-            
-            {talentResult ? (
-              <div style={{ marginTop: '1.25rem' }}>
-                <div className="talent-check-header">
-                  <div>
-                    <h4 style={{ fontSize: '0.95rem', fontWeight: 650 }}>{talentResult.company}</h4>
-                    <p style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>{talentResult.role}</p>
-                  </div>
-                  <div className="talent-score-badge">
-                    <span className="talent-score-value">0%</span> Fit
-                  </div>
-                </div>
+
+              <div className="side-by-side-grid">
                 
-                {/* 12 Skillset Gap Grid */}
-                <div className="gap-analyzer-list">
-                  {talentResult.skillset_gap.map((item, i) => (
-                    <div key={i} className="gap-item">
-                      <div className="gap-item-title">
-                        <span className={`badge badge-${item.category_code}`}>{item.category_code}</span>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                          <span style={{ fontSize: '0.7rem', color: 'var(--text-secondary)' }}>
-                            Cand: {item.candidate_level} / Req: {item.required_level}
-                          </span>
-                          <span className="gap-status-tag">
-                            {item.gap ? (
-                              <span className="status-cross"><X size={10} /> GAP</span>
-                            ) : (
-                              <span className="status-check"><Check size={10} /> READY</span>
-                            )}
-                          </span>
+                {/* Company & Role Selector */}
+                <section className="glass-panel" style={{ margin: 0, alignSelf: 'start' }}>
+                  <h3 style={{ fontSize: '1rem', fontWeight: 700, marginBottom: '1.25rem', display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'white' }}>
+                    <Award size={16} style={{ color: 'var(--primary)' }} />
+                    Select Target Profile
+                  </h3>
+
+                  <div className="form-group">
+                    <label>Target Company</label>
+                    <select 
+                      value={selectedCompany} 
+                      onChange={(e) => {
+                        setSelectedCompany(e.target.value);
+                        setSelectedRole(companyRoles[e.target.value][0]);
+                      }} 
+                      className="select-input"
+                    >
+                      <option value="Google">Google</option>
+                      <option value="Microsoft">Microsoft</option>
+                      <option value="Oracle Financial Services Software">Oracle Financial Services Software</option>
+                    </select>
+                  </div>
+                  
+                  <div className="form-group">
+                    <label>Target Role</label>
+                    <select 
+                      value={selectedRole} 
+                      onChange={(e) => setSelectedRole(e.target.value)} 
+                      className="select-input"
+                    >
+                      {companyRoles[selectedCompany]?.map(role => (
+                        <option key={role} value={role}>{role}</option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <button 
+                    onClick={handleTalentCheck} 
+                    disabled={talentLoading}
+                    className="btn btn-primary"
+                    style={{ background: 'linear-gradient(135deg, var(--primary), var(--secondary))', marginTop: '1rem' }}
+                  >
+                    {talentLoading ? <RefreshCw size={14} className="animate-spin" /> : <Play size={14} />} Analyze Readiness Bar
+                  </button>
+                </section>
+
+                {/* Talent Check Results */}
+                <section className="glass-panel" style={{ margin: 0 }}>
+                  {talentResult ? (
+                    <div>
+                      <div className="talent-check-header" style={{ marginBottom: '1.5rem' }}>
+                        <div>
+                          <h4 style={{ fontSize: '1.1rem', fontWeight: 700, color: 'white' }}>{talentResult.company}</h4>
+                          <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>{talentResult.role} Baseline</p>
+                        </div>
+                        <div className="talent-score-badge" style={{ padding: '0.5rem 1rem', borderRadius: '12px' }}>
+                          <span className="talent-score-value" style={{ fontSize: '1.25rem', fontWeight: 'bold' }}>0%</span> Fit
                         </div>
                       </div>
-                      <div className="level-indicator-bar">
-                        <div 
-                          className="level-indicator-fill-cand" 
-                          data-width={item.candidate_level * 10}
-                          style={{ width: '0%', background: item.gap ? 'var(--danger)' : 'var(--success)' }} 
-                        />
-                        <div 
-                          className="level-indicator-fill-req" 
-                          data-width={item.required_level * 10}
-                          style={{ width: '0%' }} 
-                        />
+
+                      {/* 12 Skillset Gap Grid */}
+                      <div className="gap-analyzer-list" style={{ maxHeight: '420px', overflowY: 'auto' }}>
+                        {talentResult.skillset_gap.map((item, i) => (
+                          <div key={i} className="gap-item" style={{ background: 'rgba(255, 255, 255, 0.01)', border: '1px solid rgba(255, 255, 255, 0.03)', padding: '0.75rem', borderRadius: '8px', marginBottom: '0.65rem' }}>
+                            <div className="gap-item-title">
+                              <span className={`badge badge-${item.category_code}`}>{item.category_code}</span>
+                              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                                <span style={{ fontSize: '0.7rem', color: 'var(--text-secondary)' }}>
+                                  Cand: {item.candidate_level} / Req: {item.required_level}
+                                </span>
+                                <span className="gap-status-tag">
+                                  {item.gap ? (
+                                    <span className="status-cross"><X size={10} /> GAP</span>
+                                  ) : (
+                                    <span className="status-check"><Check size={10} /> READY</span>
+                                  )}
+                                </span>
+                              </div>
+                            </div>
+                            <div className="level-indicator-bar" style={{ marginTop: '0.5rem' }}>
+                              <div 
+                                className="level-indicator-fill-cand" 
+                                data-width={item.candidate_level * 10}
+                                style={{ width: '0%', background: item.gap ? 'var(--danger)' : 'var(--success)' }} 
+                              />
+                              <div 
+                                className="level-indicator-fill-req" 
+                                data-width={item.required_level * 10}
+                                style={{ width: '0%' }} 
+                              />
+                            </div>
+                          </div>
+                        ))}
                       </div>
                     </div>
-                  ))}
-                </div>
+                  ) : (
+                    <div className="empty-state" style={{ padding: '4rem 2rem' }}>
+                      <Award size={36} className="empty-state-icon" />
+                      <p>Run Talent Check to see candidate readiness compared against standard company skill definitions.</p>
+                    </div>
+                  )}
+                </section>
+
               </div>
-            ) : (
-              <div className="empty-state">
-                <AlertCircle size={24} className="empty-state-icon" />
-                <p>Run Talent Check to see candidate readiness compared against the company skillset standards.</p>
+            </div>
+          )}
+
+          {/* STEP 4: SKILL MATCHING */}
+          {step === 4 && (
+            <div className="step-container">
+              <div className="step-header">
+                <h2>4. Job Description Skill Matching</h2>
+                <p>Run comparison mapping to check candidate matches directly against the structured requirements of the parsed JD.</p>
               </div>
-            )}
-          </div>
-          
-          {/* JOB SPECIFIC SKILL MATCHING */}
-          <div className="glass-panel" style={{ background: 'rgba(255, 255, 255, 0.02)', padding: '1.25rem' }}>
-            <h2 className="section-title">
-              <Briefcase size={18} className="text-purple-400" />
-              4. Job Skill Matching
-            </h2>
-            
-            <button 
-              onClick={handleSkillMatch} 
-              disabled={matchLoading}
-              className="btn btn-primary"
-              style={{ background: 'linear-gradient(135deg, var(--accent), var(--secondary))' }}
-            >
-              {matchLoading ? <RefreshCw size={14} className="animate-spin" /> : <Play size={14} />} Run Skill Match Check
-            </button>
-            
-            {matchResult ? (
-              <div style={{ marginTop: '1.25rem' }}>
-                <div className="skill-match-container">
-                  {renderCircleMeter(matchResult.match_score)}
-                  <div className="match-breakdown-details">
-                    <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', marginBottom: '0.25rem' }}>
-                      Target Source File:
-                    </p>
-                    <p style={{ fontSize: '0.85rem', fontWeight: 650, color: 'white', wordBreak: 'break-all' }}>
-                      {matchResult.jd_source_file}
-                    </p>
-                  </div>
-                </div>
+
+              <div className="side-by-side-grid">
                 
-                <div style={{ marginTop: '1rem' }}>
-                  <h4 style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', marginBottom: '0.4rem', fontWeight: 600 }}>Matched Skills ({matchResult.matched_skills.length})</h4>
-                  <div className="skill-chips-list">
-                    {matchResult.matched_skills.map((skill, i) => (
-                      <span key={i} className="chip chip-matched">{skill}</span>
-                    ))}
-                    {matchResult.matched_skills.length === 0 && <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>None matched</span>}
-                  </div>
+                {/* Match Trigger Section */}
+                <section className="glass-panel" style={{ margin: 0, alignSelf: 'start' }}>
+                  <h3 style={{ fontSize: '1rem', fontWeight: 700, marginBottom: '1.25rem', display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'white' }}>
+                    <Briefcase size={16} style={{ color: 'var(--primary)' }} />
+                    Relevance Matching Core
+                  </h3>
+                  <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', marginBottom: '1.5rem' }}>
+                    Matches skills extracted from the uploaded resume against keywords parsed from the job description workspace.
+                  </p>
+
+                  <button 
+                    onClick={handleSkillMatch} 
+                    disabled={matchLoading}
+                    className="btn btn-primary"
+                    style={{ background: 'linear-gradient(135deg, var(--accent), var(--secondary))' }}
+                  >
+                    {matchLoading ? <RefreshCw size={14} className="animate-spin" /> : <Play size={14} />} Run Skill Match Check
+                  </button>
+                </section>
+
+                {/* Match Results Visualizer */}
+                <section className="glass-panel" style={{ margin: 0 }}>
+                  {matchResult ? (
+                    <div>
+                      <div className="skill-match-container" style={{ background: 'rgba(255, 255, 255, 0.01)', padding: '1rem', borderRadius: '12px', border: '1px solid rgba(255, 255, 255, 0.03)' }}>
+                        {renderCircleMeter(matchResult.match_score)}
+                        <div className="match-breakdown-details">
+                          <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', marginBottom: '0.25rem' }}>
+                            Target Source Job File:
+                          </p>
+                          <p style={{ fontSize: '0.85rem', fontWeight: 650, color: 'white', wordBreak: 'break-all' }}>
+                            {matchResult.jd_source_file}
+                          </p>
+                        </div>
+                      </div>
+                      
+                      <div style={{ marginTop: '1.5rem' }}>
+                        <h4 style={{ fontSize: '0.85rem', color: 'white', marginBottom: '0.5rem', fontWeight: 600 }}>Matched Skills ({matchResult.matched_skills.length})</h4>
+                        <div className="skill-chips-list">
+                          {matchResult.matched_skills.map((skill, i) => (
+                            <span key={i} className="chip chip-matched">{skill}</span>
+                          ))}
+                          {matchResult.matched_skills.length === 0 && <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>No direct overlaps found</span>}
+                        </div>
+                      </div>
+
+                      <div style={{ marginTop: '1.25rem' }}>
+                        <h4 style={{ fontSize: '0.85rem', color: 'white', marginBottom: '0.5rem', fontWeight: 600 }}>Missing / Gaps ({matchResult.missing_skills.length})</h4>
+                        <div className="skill-chips-list">
+                          {matchResult.missing_skills.map((skill, i) => (
+                            <span key={i} className="chip chip-missing">{skill}</span>
+                          ))}
+                          {matchResult.missing_skills.length === 0 && <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>No gaps detected</span>}
+                        </div>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="empty-state" style={{ padding: '4rem 2rem' }}>
+                      <Briefcase size={36} className="empty-state-icon" />
+                      <p>Run the Skill Match analysis to visualize details and gap indices.</p>
+                    </div>
+                  )}
+                </section>
+
+              </div>
+            </div>
+          )}
+
+          {/* STEP 5: SUMMARY VIEW */}
+          {step === 5 && (
+            <div className="step-container">
+              <div className="step-header">
+                <h2>5. Consolidated Summary Flow</h2>
+                <p>Overview of the entire pipeline, documents status, candidate credentials, and comparative scores.</p>
+              </div>
+
+              <div className="side-by-side-grid" style={{ gridTemplateColumns: '1.2fr 0.8fr' }}>
+                
+                {/* Candidate Overview */}
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+                  <section className="glass-panel" style={{ margin: 0 }}>
+                    <h3 style={{ fontSize: '1rem', fontWeight: 700, marginBottom: '1rem', color: 'white' }}>Profile Summary Card</h3>
+                    <div className="profile-summary-header" style={{ marginBottom: '1.25rem' }}>
+                      <div className="profile-avatar">
+                        {profile.name ? profile.name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase() : 'C'}
+                      </div>
+                      <div className="profile-basics">
+                        <h3>{profile.name || "No name parsed"}</h3>
+                        <p style={{ fontSize: '0.8rem' }}><Mail size={12} /> {profile.email || "No email parsed"}</p>
+                        {profile.education && <p style={{ fontSize: '0.8rem' }}><Briefcase size={12} /> {profile.education}</p>}
+                      </div>
+                    </div>
+
+                    <div className="profile-stat-grid">
+                      <div className="profile-stat-box">
+                        <strong>{profile.skills?.length || 0}</strong>
+                        Skills
+                      </div>
+                      <div className="profile-stat-box">
+                        <strong>{profile.certifications?.length || 0}</strong>
+                        Certs
+                      </div>
+                      <div className="profile-stat-box">
+                        <strong>{profile.internships?.length || 0}</strong>
+                        Internships
+                      </div>
+                      <div className="profile-stat-box">
+                        <strong>{profile.hackathons?.length || 0}</strong>
+                        Hackathons
+                      </div>
+                    </div>
+                  </section>
+
+                  {/* Documents & Workspace Summary */}
+                  <section className="glass-panel" style={{ margin: 0 }}>
+                    <h3 style={{ fontSize: '1rem', fontWeight: 700, marginBottom: '1rem', color: 'white' }}>Documents Status</h3>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                      <div style={{ padding: '0.75rem', background: 'rgba(255,255,255,0.01)', border: '1px solid rgba(255,255,255,0.03)', borderRadius: '8px' }}>
+                        <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', display: 'block' }}>Job Description File:</span>
+                        <strong style={{ fontSize: '0.85rem', color: jdParsedFile ? 'var(--primary)' : 'var(--text-muted)' }}>{jdParsedFile || 'Not Loaded'}</strong>
+                      </div>
+                      <div style={{ padding: '0.75rem', background: 'rgba(255,255,255,0.01)', border: '1px solid rgba(255,255,255,0.03)', borderRadius: '8px' }}>
+                        <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', display: 'block' }}>Resume File:</span>
+                        <strong style={{ fontSize: '0.85rem', color: resumeParsedFile ? 'var(--primary)' : 'var(--text-muted)' }}>{resumeParsedFile || 'Not Loaded'}</strong>
+                      </div>
+                    </div>
+                  </section>
                 </div>
 
-                <div style={{ marginTop: '1rem' }}>
-                  <h4 style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', marginBottom: '0.4rem', fontWeight: 600 }}>Missing / Gaps ({matchResult.missing_skills.length})</h4>
-                  <div className="skill-chips-list">
-                    {matchResult.missing_skills.map((skill, i) => (
-                      <span key={i} className="chip chip-missing">{skill}</span>
-                    ))}
-                    {matchResult.missing_skills.length === 0 && <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>None missing</span>}
-                  </div>
+                {/* Score Summary Fills */}
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+                  <section className="glass-panel" style={{ margin: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', textAlign: 'center', padding: '2rem' }}>
+                    <h3 style={{ fontSize: '0.9rem', color: 'var(--text-secondary)', marginBottom: '1rem' }}>Job Match Index</h3>
+                    {matchResult ? (
+                      <div>
+                        <div style={{ fontSize: '3rem', fontWeight: 800, fontFamily: 'Outfit', color: 'var(--primary)' }}>
+                          {matchResult.match_score}%
+                        </div>
+                        <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '0.5rem' }}>Matches {matchResult.matched_skills.length} skills from {matchResult.jd_source_file}</p>
+                      </div>
+                    ) : (
+                      <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>No Match computed yet.</span>
+                    )}
+                  </section>
+
+                  <section className="glass-panel" style={{ margin: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', textAlign: 'center', padding: '2rem' }}>
+                    <h3 style={{ fontSize: '0.9rem', color: 'var(--text-secondary)', marginBottom: '1rem' }}>Company Readiness Score</h3>
+                    {talentResult ? (
+                      <div>
+                        <div style={{ fontSize: '3rem', fontWeight: 800, fontFamily: 'Outfit', color: 'var(--secondary)' }}>
+                          {talentResult.readiness_score}%
+                        </div>
+                        <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '0.5rem' }}>Ready for {talentResult.company} ({talentResult.role})</p>
+                      </div>
+                    ) : (
+                      <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>No Talent Check run yet.</span>
+                    )}
+                  </section>
                 </div>
+
               </div>
-            ) : (
-              <div className="empty-state">
-                <AlertCircle size={24} className="empty-state-icon" />
-                <p>Ensure you have parsed a Job Description and built a profile, then run the Skill Match to analyze alignment.</p>
-              </div>
-            )}
-          </div>
-        </section>
-        
-      </div>
+            </div>
+          )}
+
+        </div>
+      </main>
     </div>
   );
 }
